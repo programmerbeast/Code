@@ -2,11 +2,12 @@
 
 #Badr
 #Mohamed 
-# agent_of_chaos
+#agent_of_chaos
 
+<h2>V0.1 </h2>
+<h3>To Do list</h3>
 
-
-Script which scrapes from an app name the reviews from the past month on google play store and outputs into a csv  agen_of_chaos
+Script which scrapes from an app name the reviews from the past month on google play store and outputs into a csv  agent_of_chaos
 
 Script to do stastical analysis sentimemnt analysis, keyword extraction ....... Badr
 
