@@ -9,7 +9,7 @@
 
 <div>
 * <b>Create a crawler </b>
-<p>Script which scrapes from an app name the reviews from the past month on google play store and outputs into a csv. It takes <i>app_name</i>,  <i>source</i> (currently only Playstore), <i>start_date</i> (today) and <i>end_date<i> (today-30 days) as argument and returns a dictionary with keys: <i>app_name</i>, <i>source</i>, <i>start_date</i>, <i>end_date</i>, <i>posted_by</i>, <i>date_posted</i>. It finally stores it all into a csv file.
+<p>Script which scrapes from an app name the reviews from the past month on google play store and outputs into a csv. It takes <i>app_name</i>,  <i>source</i> (currently only Playstore), <i>start_date</i> (today) and <i>end_date</i> (today-30 days) as argument and returns a dictionary with keys: <i>app_name</i>, <i>source</i>, <i>start_date</i>, <i>end_date</i>, <i>posted_by</i>, <i>date_posted</i>. It finally stores it all into a csv file.
 <br>assigned to: <b>Chaos</b></p>
 </div>
 
