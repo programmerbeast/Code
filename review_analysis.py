@@ -4,8 +4,7 @@
 #!pip install nltk
 #!pip install textblob
 
-#nltk.download('punkt')
-#nltk.download('stopwords')
+
 
 
 #Import Libraries for sentiment analysis, tokenizing data
@@ -16,6 +15,8 @@ import pandas as pd
 import os
 from datetime import date
 
+nltk.download('punkt')
+nltk.download('stopwords')
 
 # the dates for which you start analyzing the reviews and for which you stop
 time_start="04/14/2023"
@@ -229,7 +230,7 @@ def keyword_recommendation(day,list_reviews):
             list_keywords_negative_reviews=sorted(list_keywords_negative_reviews,key=lambda x: x[1])
             list_keywords_positive_reviews=sorted(list_keywords_positive_reviews,key=lambda x:x[1])
             
-            return [list_keywords_negative_reviews,list_keywords_positive_reviews]
+            return (list_keywords_negative_reviews,list_keywords_positive_reviews)
 
 
 
@@ -273,24 +274,25 @@ def make_graph_keywords(list_keywords_negative_reviews,list_keywords_positive_re
 
 
 
-#list_reviews= reviews_to_analysis(time_start,time_end,"data")
+list_reviews= reviews_to_analysis(time_start,time_end,"data")
 
 
 
 #example code to make graph
 
-#(list_keywords_negative_reviews,list_keywords_positive_reviews) = keyword_recommendation(day,list_reviews)
-#day = "2023/04/19"
-#(list_keywords_negative_reviews,list_keywords_positive_reviews) = keyword_recommendation(day,list_reviews)
-#make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews)
-
-
-
+day = "2023/04/19"
+print(list_reviews)
+(list_keywords_negative_reviews,list_keywords_positive_reviews) = keyword_recommendation(day,list_reviews)
+make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews)
 
 #example code to make graph
 
-#keyword="ok"
-#time_frame= get_time_frame(time_start,time_end)
-#list_time_keyword = keyword_counter(keyword,list_reviews,time_frame)
-#(data_negative,data_positive) = get_data_negpos(list_time_keyword)
-#make_graph(keyword,data_negative,data_positive,time_frame,time_start,time_end)
+keyword="ok"
+time_frame= get_time_frame(time_start,time_end)
+print(time_frame)
+list_time_keyword = keyword_counter(keyword,list_reviews,time_frame)
+print(list_time_keyword)
+(data_negative,data_positive) = get_data_negpos(list_time_keyword)
+print(data_negative)
+print(data_positive)
+make_graph(keyword,data_negative,data_positive,time_frame,time_start,time_end)
