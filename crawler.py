@@ -3,6 +3,18 @@ from os import path, listdir, mkdir
 import pandas as pd
 import utils
 from datetime import datetime
+import string
+import nltk
+
+
+stopwords = nltk.corpus.stopwords.words("english")
+
+
+def clean_review(review):
+    text_new = "".join([i for i in review if i not in string.punctuation])
+    words = nltk.tokenize.word_tokenize(text_new)
+    words_new = [i for i in words if i not in stopwords]
+    return " ".join(words_new)
 
 
 def crawler(app_id, continuation_token=None, epochs=10, batch_size=100):
@@ -42,6 +54,8 @@ def driver(app_name, epochs=10, batch_size=100):
         epochs=epochs,
         batch_size=batch_size,
     )
+    for review in result:
+        review["content"] = clean_review(review["content"])
     utils.save_object(
         continuation_token, path.join(final_path, "Continuation_Token.pkl")
     )
@@ -55,4 +69,4 @@ def driver(app_name, epochs=10, batch_size=100):
 
 if __name__ == "__main__":
     app_name = "PokemonGo"
-    driver(app_name, epochs=10)
+    driver(app_name, epochs=1)
