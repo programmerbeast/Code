@@ -65,7 +65,7 @@ def reviews_to_analysis(time_start,time_end, name_starting_file):
     
     
     
-    #PUT IN THE DIRECTORY NAME TO THE DATA FOLDER
+    #put in the directory variable the path to the Data folder
     directory=""
     arr_files=order_csv_files(directory,True)
     
@@ -272,11 +272,14 @@ def keyword_recommendation(day,list_reviews):
 
 def get_reviews_by_keyword(keyword):
     arr_reviews=[]
-    i=1
+    i=0
+    #put the path to the data folder
+    directory=""
+    arr_files=order_csv_files(directory,True)
     stop_reading_data = False
     while (stop_reading_data==False):
-        if(os.path.isfile("data_{}.csv".format(i))):
-            data =pd.read_csv("data_{}.csv".format(i), sep=",", engine="python", error_bad_lines=False)
+        if(os.path.isfile("{}.csv".format(arr_files[i]))):
+            data =pd.read_csv("{}.csv".format(arr_files[i]), sep=",", engine="python", error_bad_lines=False)
             if(len(data) !=0):
                 for j in range(len(data["content"])):
                     if keyword in data["content"][j]:
