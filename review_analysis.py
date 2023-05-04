@@ -14,6 +14,7 @@ from textblob import TextBlob
 import pandas as pd
 import os
 from datetime import date
+from datetime import datetime
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -27,6 +28,31 @@ time_end="04/20/2023"
 
 
 
+#Order the csv files by descending or ascending order
+def order_csv_files(directory,descending=False):
+    
+    # get the current directory
+
+# change this to the directory where the csv files are located at
+    arr_filenames=[]
+# loop through all files in the current directory
+    for filename in os.listdir(directory):
+    # check if the current item is a file
+        if os.path.isfile(os.path.join(directory, filename)):
+            if(filename!="Continuation_Token.pkl"):
+                arr_filenames.append(filename)
+                
+    arr_filenames = [os.path.splitext(x)[0].replace("_","-") for x in arr_filenames]
+    arr_dates= [datetime.strptime(x, '%d-%m-%Y-%H-%M-%S') for x in arr_filenames]
+    arr_dates = sorted(arr_dates,reverse=descending)
+    arr_dates= [x.strftime('%d-%m-%Y_%H-%M-%S') for x in arr_dates]
+    return arr_dates
+
+
+
+
+
+
 
 
 
@@ -36,6 +62,15 @@ time_end="04/20/2023"
 #and frequency counter for every keyword to check how many times it appears in a positive respectively negative
 #review ordered by day
 def reviews_to_analysis(time_start,time_end, name_starting_file):
+    
+    
+    
+    #PUT IN THE DIRECTORY NAME TO THE DATA FOLDER
+    directory=""
+    arr_files=order_csv_files(directory,True)
+    
+    
+    
     list_reviews=[]
     data_end=" "
     data_start=" " 
@@ -44,14 +79,14 @@ def reviews_to_analysis(time_start,time_end, name_starting_file):
     #boolean that will stop the analyzing
     stop_reading_data=False
     #iteration of csv files
-    i=1
+    i=0
     while (stop_reading_data==False):
         #if csv file exists
         #note that csv files should be ordered by number
         #so of the game pokemon go, the csv files should be ordered
         #for example pokemon_go_1, pokemon_go_2......
-        if(os.path.isfile("{}_{}.csv".format(name_starting_file, i))):
-            data =pd.read_csv("{}_{}.csv".format(name_starting_file, i), sep=",", engine="python", error_bad_lines=False)
+        if(os.path.isfile("{}.csv".format(arr_files[i]))):
+            data =pd.read_csv("{}.csv".format(arr_files[i]), sep=",", engine="python", error_bad_lines=False)
             print("i:", i)
             print(len(data))
             #if csv file nonempty, else stop analyzing
