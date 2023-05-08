@@ -56,3 +56,13 @@ def retrieve_app_id(appname):
     except:
         print(f"{appname} not in map.")
     return id
+
+def retrieve_app_id(appname):
+    file = path.join("Data", "name_id_map.csv")
+    df = pd.read_csv(file)
+    id = None
+    try:
+        id = df.loc[df["app_name"] == appname]["app_id"].values[0]
+    except:
+        print(f"{appname} not in map.")
+    return id

@@ -36,8 +36,8 @@ def crawler(app_id, continuation_token=None, epochs=10, batch_size=100):
     return final_result, continuation_token
 
 
-def driver(app_name, epochs=10, batch_size=100):
-    app_id = utils.retrieve_app_id(app_name)
+def driverCrawler(app_name, app_id, epochs=10, batch_size=100):
+    print(f"Running Crawler for {app_name} with id {app_id}")
     subdirs = listdir("Data")
     final_path = path.join("Data", app_name)
     if app_name in subdirs:
@@ -68,5 +68,6 @@ def driver(app_name, epochs=10, batch_size=100):
 
 
 if __name__ == "__main__":
-    app_name = "PokemonGo"
-    driver(app_name, epochs=1)
+    app_name = "Instagram"
+    app_id = "com.instagram.android"
+    driverCrawler(app_name, epochs=100)

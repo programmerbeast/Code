@@ -9,6 +9,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from displayGraph import display_graph
 from uiDialog import NewAppDialog, ChangeAppDialog
+from crawler import driverCrawler
 
 
 class MainWindow(object):
@@ -95,11 +96,30 @@ class MainWindow(object):
         # Test
         self.appList.append(
             {
-                "appName": "app1",
-                "appId": "app1Id",
+                "appName": "Twitter",
+                "appId": "com.twitter.android",
             }
         )
-        self.listWidget.addItem("app1")
+        self.appList.append(
+            {
+                "appName": "Instagram",
+                "appId": "com.instagram.android",
+            }
+        )
+        self.appList.append(
+            {
+                "appName": "Facebook",
+                "appId": "com.facebook.katana",
+            }
+        )
+        self.appList.append(
+            {
+                "appName": "LinkedIn",
+                "appId": "com.linkedin.android",
+            }
+        )
+
+        self.updateListWidget()
 
         self.retranslateUi(MainWindow)
         self.listWidget.setCurrentRow(-1)
@@ -131,8 +151,11 @@ class MainWindow(object):
 
     def onClick_pushButton_runCrawler(self):
         for element in self.appList:
-            appid = element["appId"]
-            print(f"runCrawler for appid: {appid}")
+            appName = element["appName"]
+            appId = element["appId"]
+            driverCrawler(
+                appName, appId, epochs=100
+            )  # change the epochs to incerease number of reviews
 
     def onClick_pushButton_displayGraph(self):
         display_graph()
