@@ -15,18 +15,19 @@ import pandas as pd
 import os
 from datetime import date
 from datetime import datetime
+#import gensim
+#from gensim import corpora
+#from gensim.models import LdaModel
+
+
+
 
 nltk.download('punkt')
 nltk.download('stopwords')
 
-# the dates for which you start analyzing the reviews and for which you stop
-time_start="04/14/2023"
-time_end="04/20/2023"
+# the dates for which you start analyzing the reviews and for which you sto
 
 #Load reviews from csv file
-
-
-
 
 #Order the csv files by descending or ascending order
 def order_csv_files(directory,descending=False):
@@ -51,26 +52,20 @@ def order_csv_files(directory,descending=False):
 
 
 
-
-
-
-
-
 #the starting date of a csv file and the ending date
 
 #function that for a starting time until an ending time will analyze the reviews(extract keywords, semantic analysis
 #and frequency counter for every keyword to check how many times it appears in a positive respectively negative
 #review ordered by day
-def reviews_to_analysis(time_start,time_end, name_starting_file):
+def reviews_to_analysis(time_start,time_end,directory):
     
-    
-    
+    start_date = datetime.strptime(time_start, "%m/%d/%Y")
+    end_date = datetime.strptime(time_end, "%m/%d/%Y")
+    print("a")
     #put in the directory variable the path to the Data folder
-    directory=""
+    directory=directory
     arr_files=order_csv_files(directory,True)
-    
-    
-    
+    print(arr_files)
     list_reviews=[]
     data_end=" "
     data_start=" " 
@@ -85,8 +80,16 @@ def reviews_to_analysis(time_start,time_end, name_starting_file):
         #note that csv files should be ordered by number
         #so of the game pokemon go, the csv files should be ordered
         #for example pokemon_go_1, pokemon_go_2......
-        if(os.path.isfile("{}.csv".format(arr_files[i]))):
-            data =pd.read_csv("{}.csv".format(arr_files[i]), sep=",", engine="python", error_bad_lines=False)
+        print("b")
+        print("i:", i)
+        if(i>=len(arr_files)):
+            stop_reading_data=True
+            continue
+
+        if(os.path.isfile(os.path.join(directory,"{}.csv".format(arr_files[i])))):
+            data =pd.read_csv(os.path.join(directory,"{}.csv".format(arr_files[i])), sep=",", engine="python", error_bad_lines=False)
+            data["content"]=data["content"].fillna('default_text')
+            print(data)
             print("i:", i)
             print(len(data))
             #if csv file nonempty, else stop analyzing
@@ -120,34 +123,53 @@ def reviews_to_analysis(time_start,time_end, name_starting_file):
 
                     #dates of csv file entries
                     list_date=data["at"].apply(lambda x: x.split()[0].split("-"))
-                    print(list_date)
-
-                    k=0
+                    
+                    s=0
+                    e=0
+                    for u,q in enumerate(list_date):
+                        
+                        date_string = "{}/{}/{}".format(q[1], q[2], q[0])
+                        date = datetime.strptime(date_string, "%m/%d/%Y")
+                        if(date>=start_date):
+                            s=u
+                        if(date<=end_date and e==0):
+                            e=u
+                    k=e+1
+                   
                     #look for the csv file and do the analysis
-                    for j in range(1, len(list_date)):
+                    #fix this
+                    print("s:", s)
+                    print("e:", e)
+                    for j in range(min(e+1,len(list_date)-1), min(s-1,len(list_date)-1)):
+                        print(j)
                         #if there is a change from one date to the other, analyze and get the result with the date in a list
+                    
                         if(list_date[j][2]!=list_date[j-1][2]):
                             #this is so that when the previous csv file is ordered by a certain date and in the current
                             #csv file there is the same date to make sure the results are merged for that date
                             if(data_start[2]==previous_data_end[2]):
                                 x=analyze_reviews(data["content"][k:j])
+                                print(x)
                                 z=merge_dicts(x,list_reviews[-1][0])
                                 list_reviews[-1] = [z,list_reviews[-1][1]]
                                 previous_data_end=["0","0","0"]
 
                             else:
                                 list_reviews.append([analyze_reviews(data["content"][k:j]),list_date[j-1]])
+                                print([analyze_reviews(data["content"][k:j]),list_date[j-1]])
 
                             k=j
                         #else end of document, analyze the rest of the data that has not been analyzed
                         elif(j==len(list_date)-1):
                             if(list_date[j][2]==previous_data_end[2]):
                                 x=analyze_reviews(data["content"][k:j])
+                                print(x)
                                 z=merge_dicts(x,list_reviews[-1][0])
                                 list_reviews[-1] = [z,list_reviews[-1][1]]
                                 previous_data_end=["0","0","0"]
                             else:
                                 list_reviews.append([analyze_reviews(data["content"][k:j]),list_date[j]])
+                                print([analyze_reviews(data["content"][k:j]),list_date[j]])
 
             else:
                 stop_reading_data=True
@@ -167,12 +189,14 @@ def merge_dicts(x, y):
 
 def analyze_reviews(reviews):
     keyword_list={}
+    stop_words = set(nltk.corpus.stopwords.words('english'))
     for review in reviews:
-        review = str(TextBlob(review).correct())
+
+        #review = str(TextBlob(review).correct())
         #tokenize review
         tokens = nltk.word_tokenize(review)
         #ignore stop_words
-        stop_words = set(nltk.corpus.stopwords.words('english'))
+        
         tokens = [token.lower() for token in tokens if token.lower() not in stop_words]
         #get the sentiment of the review
         sentiment = TextBlob(review).sentiment.polarity
@@ -216,19 +240,34 @@ def keyword_counter(keyword,list_reviews,time_frame):
 
 #make a graph of the output of the keyword_counter function
 
-def make_graph(keyword, data_negative,data_positive,time_frame,time_start,time_end):
+#def make_graph(keyword, data_negative,data_positive,time_frame,time_start,time_end):
     
-    fig, ax = plt.subplots(1, figsize=(20, 5))
-    x = range(time_frame)
-    ax.plot(x, data_negative, label="negative review", color="red")
-    ax.plot(x, data_positive, label="positive review", color="blue")
-    ax.set(title="Positive and Negative reviews with the keyword {}".format(keyword),
-           xlabel="Date", ylabel="Number of Reviews")
-    xi = pd.date_range(time_start, time_end, freq='d')
-    ax.set_xticks(range(time_frame))
-    ax.set_xticklabels(xi.strftime('%m/%d/%Y'))
-    ax.legend()
-    plt.show()
+ #   fig, ax = plt.subplots(1, figsize=(20, 5))
+  #  x = range(time_frame)
+   # ax.plot(x, data_negative, label="negative review", color="red")
+    #ax.plot(x, data_positive, label="positive review", color="blue")
+    #ax.set(title="Positive and Negative reviews with the keyword {}".format(keyword),
+    #       xlabel="Date", ylabel="Number of Reviews")
+    #xi = pd.date_range(time_start, time_end, freq='d')
+    #ax.set_xticks(range(time_frame))
+    #ax.set_xticklabels(xi.strftime('%m/%d/%Y'))
+    #ax.legend()
+    #plt.show()
+import plotly.graph_objects as go
+
+def make_graph(keyword, data_negative, data_positive, time_frame, time_start, time_end):
+    x = pd.date_range(time_start, time_end, freq='d')
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=x, y=data_negative, mode='lines', name='negative review', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=x, y=data_positive, mode='lines', name='positive review', line=dict(color='blue')))
+    
+    fig.update_layout(title=f"Positive and Negative reviews with the keyword {keyword}",
+                      xaxis_title="Date",
+                      yaxis_title="Number of Reviews")
+    fig.update_xaxes(tickangle=-45, tickformat='%m/%d/%Y', tickmode='array', tickvals=x)
+    
+    fig.show()
 
 
 #get the amount of days between two dates
@@ -265,7 +304,7 @@ def keyword_recommendation(day,list_reviews):
             list_keywords_negative_reviews=sorted(list_keywords_negative_reviews,key=lambda x: x[1])
             list_keywords_positive_reviews=sorted(list_keywords_positive_reviews,key=lambda x:x[1])
             
-            return (list_keywords_negative_reviews,list_keywords_positive_reviews)
+    return (list_keywords_negative_reviews,list_keywords_positive_reviews)
 
 
 
@@ -289,48 +328,103 @@ def get_reviews_by_keyword(keyword):
     return arr_reviews
 
 
-def make_graph_keywords(list_keywords_negative_reviews,list_keywords_positive_reviews):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 5))
+#def make_graph_keywords(list_keywords_negative_reviews,list_keywords_positive_reviews):
+   # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 5))
 
-    keyword_negative = [i[0] for i in list_keywords_negative_reviews]
-    freq_negative = [i[1] for i in list_keywords_negative_reviews]
-    keyword_positive = [i[0] for i in list_keywords_positive_reviews]
-    freq_positive = [i[1] for i in list_keywords_positive_reviews]
+    #keyword_negative = [i[0] for i in list_keywords_negative_reviews]
+    #freq_negative = [i[1] for i in list_keywords_negative_reviews]
+    #keyword_positive = [i[0] for i in list_keywords_positive_reviews]
+    #freq_positive = [i[1] for i in list_keywords_positive_reviews]
 
-    ax1.bar(keyword_negative[-10:], freq_negative[-10:])
-    ax1.set_title("Keywords with the most amount of negative reviews")
-    ax1.set_xlabel("Keywords")
-    ax1.set_ylabel("Frequency")
+    #ax1.bar(keyword_negative[-10:], freq_negative[-10:])
+    #ax1.set_title("Keywords with the most amount of negative reviews")
+    #ax1.set_xlabel("Keywords")
+    #ax1.set_ylabel("Frequency")
 
-    ax2.bar(keyword_positive[-10:], freq_positive[-10:])
-    ax2.set_title("Keywords with the most amount of positive reviews")
-    ax2.set_xlabel("Keywords")
-    ax2.set_ylabel("Frequency")
+   # ax2.bar(keyword_positive[-10:], freq_positive[-10:])
+    #ax2.set_title("Keywords with the most amount of positive reviews")
+   # ax2.set_xlabel("Keywords")
+  #  ax2.set_ylabel("Frequency")
 
-    plt.tight_layout()
-    plt.show()
+ #   plt.tight_layout()
+ #   plt.show()
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+#def make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews):
+   # keyword_negative = [i[0] for i in list_keywords_negative_reviews][-10:]
+   # freq_negative = [i[1] for i in list_keywords_negative_reviews][-10:]
+   # keyword_positive = [i[0] for i in list_keywords_positive_reviews][-10:]
+   # freq_positive = [i[1] for i in list_keywords_positive_reviews][-10:]
+   # print(keyword_negative,"f")
+   # print(keyword_positive,"g")
+   # print(list_reviews)
+   # fig = go.Figure()
+   # fig.add_trace(go.Bar(x=keyword_negative, y=freq_negative, name='negative review', marker=dict(color='red')))
+   # fig2=go.Figure()
+   # fig2.add_trace(go.Bar(x=keyword_positive, y=freq_positive, name='positive review', marker=dict(color='blue')))
+
+    
+  #  fig.update_layout(barmode='group', title="Keywords with the most amount of negative reviews",
+  #                    xaxis_title="Keywords", yaxis_title="Frequency",width=4000,height=2000,xaxis_tickfont=dict(size=40), yaxis_tickfont=dict(size=40))
+  #  fig2.update_layout(barmode='group', title="Keywords with the most amount of positive reviews",
+ #$                     xaxis_title="Keywords", yaxis_title="Frequency",width=4000,height=2000, xaxis_tickfont=dict(size=40), yaxis_tickfont=dict(size=40))#
+
+ #   fig.show()
+   # fig2.show()
+def make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews):
+    keyword_negative = [i[0] for i in list_keywords_negative_reviews][-20:]
+    freq_negative = [i[1] for i in list_keywords_negative_reviews][-20:]
+    keyword_positive = [i[0] for i in list_keywords_positive_reviews][-20:]
+    freq_positive = [i[1] for i in list_keywords_positive_reviews][-20:]
+    
+    fig = make_subplots(rows=2, cols=1, subplot_titles=("Keywords with the most amount of negative reviews", 
+                                                        "Keywords with the most amount of positive reviews"))
+    
+    fig.add_trace(go.Bar(x=keyword_negative, y=freq_negative, name='negative review', marker=dict(color='red')), row=1, col=1)
+    fig.add_trace(go.Bar(x=keyword_positive, y=freq_positive, name='positive review', marker=dict(color='blue')), row=2, col=1)
+
+    fig.update_layout(barmode='group', width=4000, height=2200,xaxis=dict(type='category',range=[0,5]),yaxis=dict(range=[0, max(freq_negative + freq_positive)]),dragmode='pan',dragdirection='x')
+    fig.update_xaxes(title_text="Keywords", tickfont=dict(size=40))
+    fig.update_yaxes(title_text="Frequency", tickfont=dict(size=40))
+    
+    fig.show()
 
 
 
-list_reviews= reviews_to_analysis(time_start,time_end,"data")
+#list_reviews= reviews_to_analysis(time_start,time_end,"data")
 
 
 
 #example code to make graph
 
-day = "2023/04/19"
-print(list_reviews)
-(list_keywords_negative_reviews,list_keywords_positive_reviews) = keyword_recommendation(day,list_reviews)
-make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews)
+#day = "2023/04/19"
+#print(list_reviews)
+#(list_keywords_negative_reviews,list_keywords_positive_reviews) = keyword_recommendation(day,list_reviews)
+#make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews)
 
 #example code to make graph
 
-keyword="ok"
-time_frame= get_time_frame(time_start,time_end)
-print(time_frame)
-list_time_keyword = keyword_counter(keyword,list_reviews,time_frame)
-print(list_time_keyword)
-(data_negative,data_positive) = get_data_negpos(list_time_keyword)
-print(data_negative)
-print(data_positive)
-make_graph(keyword,data_negative,data_positive,time_frame,time_start,time_end)
+#keyword="ok"
+#time_frame= get_time_frame(time_start,time_end)
+#print(time_frame)
+#list_time_keyword = keyword_counter(keyword,list_reviews,time_frame)
+#print(list_time_keyword)
+#(data_negative,data_positive) = get_data_negpos(list_time_keyword)
+#print(data_negative)
+#print(data_positive)
+#make_graph(keyword,data_negative,data_positive,time_frame,time_start,time_end)
+
+def run_graph_time(time_start,time_end,keyword,list_reviews):
+    time_frame= get_time_frame(time_start,time_end)
+    list_time_keyword = keyword_counter(keyword,list_reviews,time_frame)
+    (data_negative,data_positive) = get_data_negpos(list_time_keyword)
+    make_graph(keyword,data_negative,data_positive,time_frame,time_start,time_end)
+    
+
+def run_graph_keyword(day,list_reviews):
+    (list_keywords_negative_reviews,list_keywords_positive_reviews) = keyword_recommendation(day,list_reviews)
+    make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews)
+
+
+
