@@ -158,7 +158,7 @@ class MainWindow(object):
             )  # change the epochs to incerease number of reviews
 
     def onClick_pushButton_displayGraph(self):
-        display_graph()
+        display_graph("Linkedin")
 
     def onClick_pushButton_quit(self):
         sys.exit()
