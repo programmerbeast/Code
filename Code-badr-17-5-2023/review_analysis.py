@@ -347,6 +347,23 @@ def get_reviews_by_keyword(time_start,time_end,keyword,directory):
         i+=1
     return arr_reviews
 
+def first_date_before_second_date(first_date,second_date):
+    first_date = datetime.strptime(first_date, "%m/%d/%Y")
+    second_date = datetime.strptime(second_date, "%m/%d/%Y")
+    return(first_date<second_date)
+
+def latest_first_date_earliest_second_date(first_date_1,first_date_2,second_date_1,second_date_2):
+    if(first_date_before_second_date(first_date_1,first_date_2)):
+        first_date=first_date_1
+    
+    else: first_date=first_date_2
+
+    if(first_date_before_second_date(second_date_1,second_date_2)):
+        second_date=second_date_2
+    
+    else: second_date=second_date_1
+    return ([first_date,second_date])
+
 
 
 

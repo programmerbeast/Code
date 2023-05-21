@@ -1,9 +1,18 @@
-from review_analysis import get_time_frame, keyword_counter, get_data_negpos
+from review_analysis import get_time_frame, keyword_counter, get_data_negpos, reviews_to_analysis, first_date_before_second_date
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.offline as pyo
 
+
+time_start="04/01/2023"
+time_end="05/18/2023"
+app_name="Twitter"
+keyword="elon"
+day = "2023/04/15"
+directory="Data/{}".format(app_name)
+print("this is runned")
+list_reviews=reviews_to_analysis(time_start,time_end,directory)
 
 def run_graph_time(time_start,time_end,keyword,list_reviews):
     time_frame= get_time_frame(time_start,time_end)
@@ -12,7 +21,16 @@ def run_graph_time(time_start,time_end,keyword,list_reviews):
 
 
 def make_graph(keyword, list_reviews, time_frame, time_start, time_end):
+    #print([i[1] for i in list_reviews])
+    start_date_reviews=list_reviews[0][1]
+    end_date_reviews=list_reviews[len(list_reviews)-1][1]
+    start_date_reviews = "{}/{}/{}".format(start_date_reviews[1], start_date_reviews[2], start_date_reviews[0])
+    end_date_reviews="{}/{}/{}".format(end_date_reviews[1], end_date_reviews[2], end_date_reviews[0])
+
     (data_negative,data_positive)=get_data_negpos(keyword_counter(keyword,list_reviews,time_frame,time_start,time_end))  
+  
+    print(data_negative)
+    print(data_positive)
     x = pd.date_range(time_start, time_end, freq='d')
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=data_negative, mode='lines', name='negative review', line=dict(color='red')))
@@ -51,3 +69,4 @@ def make_graph(keyword, list_reviews, time_frame, time_start, time_end):
     #fig.show()
     return fig
 
+run_graph_time(time_start,time_end,keyword,list_reviews)

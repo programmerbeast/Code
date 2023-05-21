@@ -5,7 +5,7 @@ import plotly.express as px
 from dash.dependencies import Input, Output, State
 from displayGraph import display_graph_time,display_graph_keywords
 from datetime import datetime
-from review_analysis import reviews_to_analysis
+from review_analysis import reviews_to_analysis, latest_first_date_earliest_second_date
 from reviews_by_keyword import show_reviews_by_keyword
 
 
@@ -17,6 +17,10 @@ day = "2023/04/15"
 directory="Data/{}".format(app_name)
 print("this is runned")
 list_reviews=reviews_to_analysis(time_start,time_end,directory)
+start_date_reviews=list_reviews[0][1]
+end_date_reviews=list_reviews[len(list_reviews)-1][1]
+start_date_reviews = "{}/{}/{}".format(start_date_reviews[1], start_date_reviews[2], start_date_reviews[0])
+end_date_reviews="{}/{}/{}".format(end_date_reviews[1], end_date_reviews[2], end_date_reviews[0])
 print("this too")
 # Create a Dash app
 app = dash.Dash(__name__)
@@ -117,7 +121,13 @@ def update_graph(n_clicks, start_date, end_date, keyword):
         start_date = datetime.strptime(start_date, '%Y-%m-%d').strftime('%m/%d/%Y')
         end_date = datetime.strptime(end_date, '%Y-%m-%d').strftime('%m/%d/%Y')
         # Call the display_graph_time function with the selected start and end dates and keyword
-        fig = display_graph_time(start_date, end_date,keyword,list_reviews)
+        [date_1,date_2]=latest_first_date_earliest_second_date(start_date_reviews,end_date,end_date_reviews,start_date)
+        print("date_1", date_1)
+        print("date_2:",date_2)
+
+
+
+        fig = display_graph_time(date_2,date_1,keyword,list_reviews)
         return fig
     else:
         return dash.no_update
