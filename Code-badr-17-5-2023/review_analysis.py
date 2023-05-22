@@ -190,18 +190,31 @@ def analyze_reviews(reviews):
         tokens = [token.lower() for token in tokens if token.lower() not in stop_words]
         #get the sentiment of the review
         sentiment = TextBlob(review).sentiment.polarity
-
+        keyword_review="entire_review#1234"
         #for every keyword, count how many times they appear in a negative respectively positive review
+        if sentiment<=0.1 and keyword_review in keyword_list:
+            keyword_list[keyword_review][0]+=1
+        
+        elif sentiment>0.1 and keyword_review in keyword_list:
+            keyword_list[keyword_review][1]+=1
+
+        elif sentiment<=0.1 and keyword_review not in keyword_list:
+            keyword_list[keyword_review] = [1,0]
+
+        elif sentiment>0.1 and keyword_review not in keyword_list:
+            keyword_list[keyword_review] = [0,1]
+
+
         for token in tokens:
             if token in keyword_list:
                 if sentiment<=0.1:
                     keyword_list[token][0]+=1
-                elif sentiment>0:
+                elif sentiment>0.1:
                     keyword_list[token][1]+=1
             else:
                 if sentiment<=0.1:
                     keyword_list[token]=[1,0]
-                elif sentiment>0:
+                elif sentiment>0.1:
                     keyword_list[token]=[0,1]
         
     return keyword_list

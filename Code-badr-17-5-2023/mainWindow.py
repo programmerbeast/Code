@@ -11,6 +11,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from uiDialog import NewAppDialog, ChangeAppDialog
 from crawler import driverCrawler
 import subprocess
+import threading
 command = ['python', 'app.py']
 
 class MainWindow(object):
@@ -159,20 +160,21 @@ class MainWindow(object):
             )  # change the epochs to incerease number of reviews
 
     def onClick_pushButton_displayGraph(self):
-        process = subprocess.Popen(command)
+       # Create a new thread and run the command in it
+        thread = threading.Thread(target=run_command, args=(command,))
+        thread.start()
         #stdout=subprocess.PIPE, stderr=subprocess.PIPE
         # Wait for the process to finish and get the output
-        output, error = process.communicate()
 
         # Decode the output and error messages
         #output = output.decode('utf-8')
         #error = error.decode('utf-8')
 
         # Print the output and error messages
-        print("Output:")
-        print(output)
-        print("Error:")
-        print(error)
+       # print("Output:")
+       # print(output)
+        #print("Error:")
+        #print(error)
        # display_graph("Linkedin")
 
     def onClick_pushButton_quit(self):
@@ -188,6 +190,10 @@ class MainWindow(object):
         obj_listEditDelete.setupUi(dialog_listEditDelete)
         dialog_listEditDelete.exec()
         self.updateListWidget()
+
+def run_command(command):
+    process = subprocess.Popen(command)
+    process.communicate()
 
 
 if __name__ == "__main__":

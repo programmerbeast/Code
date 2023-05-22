@@ -26,7 +26,8 @@ def make_graph(keyword, list_reviews, time_frame, time_start, time_end):
     end_date_reviews=list_reviews[len(list_reviews)-1][1]
     start_date_reviews = "{}/{}/{}".format(start_date_reviews[1], start_date_reviews[2], start_date_reviews[0])
     end_date_reviews="{}/{}/{}".format(end_date_reviews[1], end_date_reviews[2], end_date_reviews[0])
-
+    if(keyword==""):
+        keyword="entire_review#1234"
     (data_negative,data_positive)=get_data_negpos(keyword_counter(keyword,list_reviews,time_frame,time_start,time_end))  
   
     print(data_negative)
@@ -35,7 +36,8 @@ def make_graph(keyword, list_reviews, time_frame, time_start, time_end):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=data_negative, mode='lines', name='negative review', line=dict(color='red')))
     fig.add_trace(go.Scatter(x=x, y=data_positive, mode='lines', name='positive review', line=dict(color='blue')))
-    
+    if(keyword=="entire_review#1234"):
+        keyword="All_Reviews"
     fig.update_layout(
         plot_bgcolor='rgba(33,67, 156, 0.8)',
 

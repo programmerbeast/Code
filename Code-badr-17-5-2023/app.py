@@ -12,7 +12,7 @@ from reviews_by_keyword import show_reviews_by_keyword
 time_start="04/01/2023"
 time_end="05/18/2023"
 app_name="Twitter"
-keyword="elon"
+keyword=""
 day = "2023/04/15"
 directory="Data/{}".format(app_name)
 print("this is runned")
@@ -24,7 +24,10 @@ end_date_reviews="{}/{}/{}".format(end_date_reviews[1], end_date_reviews[2], end
 print("this too")
 # Create a Dash app
 app = dash.Dash(__name__)
-fig=display_graph_time(time_start,time_end,keyword,list_reviews)
+
+# Call the display_graph_time function with the selected start and end dates and keyword
+
+fig=display_graph_time(end_date_reviews,start_date_reviews,keyword,list_reviews)
 fig2=display_graph_keywords(time_start,time_end,list_reviews)
 # Define the layout of the app
 scroll_box_content = []
@@ -117,6 +120,11 @@ app.layout = html.Div([html.Div([
      State('date-picker-range', 'end_date'),
      State('keyword-input', 'value')])
 def update_graph(n_clicks, start_date, end_date, keyword):
+    print("start_date",start_date)
+    print("end_date",end_date)
+    if(start_date is None or end_date is None):
+        print("start_date or end_date is None")
+        return dash.no_update
     if n_clicks is not None:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').strftime('%m/%d/%Y')
         end_date = datetime.strptime(end_date, '%Y-%m-%d').strftime('%m/%d/%Y')
@@ -142,6 +150,9 @@ def update_graph(n_clicks, start_date, end_date, keyword):
      
 def update_graph2(n_clicks, start_date, end_date):
     # Call the display_graph_time function with the selected start and end dates and keyword
+    if(start_date is None or end_date is None):
+        print("start_date or end_date is None")
+        return dash.no_update
     if n_clicks is not None:
         start_date = datetime.strptime(start_date, '%Y-%m-%d').strftime('%m/%d/%Y')
         end_date = datetime.strptime(end_date, '%Y-%m-%d').strftime('%m/%d/%Y')
@@ -164,6 +175,9 @@ def update_graph2(n_clicks, start_date, end_date):
      State('keyword-input2', 'value')
      ])
 def update_scroll_box(n_clicks,start_date,end_date,keyword):
+    if(start_date is None or end_date is None):
+        print("start_date or end_date is None")
+        return dash.no_update
     if n_clicks is not None:
         scroll_box_content=[]
         start_date = datetime.strptime(start_date, '%Y-%m-%d').strftime('%m/%d/%Y')
