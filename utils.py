@@ -57,6 +57,7 @@ def retrieve_app_id(appname):
         print(f"{appname} not in map.")
     return id
 
+
 def retrieve_app_id(appname):
     file = path.join("Data", "name_id_map.csv")
     df = pd.read_csv(file)

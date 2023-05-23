@@ -12,7 +12,9 @@ from uiDialog import NewAppDialog, ChangeAppDialog
 from crawler import driverCrawler
 import subprocess
 import threading
-command = ['python', 'app.py']
+
+command = ["python", "app.py"]
+
 
 class MainWindow(object):
     def __init__(self):
@@ -160,22 +162,23 @@ class MainWindow(object):
             )  # change the epochs to incerease number of reviews
 
     def onClick_pushButton_displayGraph(self):
-       # Create a new thread and run the command in it
+        # Create a new thread and run the command in it
         thread = threading.Thread(target=run_command, args=(command,))
         thread.start()
-        #stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        # stdout=subprocess.PIPE, stderr=subprocess.PIPE
         # Wait for the process to finish and get the output
 
         # Decode the output and error messages
-        #output = output.decode('utf-8')
-        #error = error.decode('utf-8')
+        # output = output.decode('utf-8')
+        # error = error.decode('utf-8')
 
         # Print the output and error messages
-       # print("Output:")
-       # print(output)
-        #print("Error:")
-        #print(error)
-       # display_graph("Linkedin")
+
+    # print("Output:")
+    # print(output)
+    # print("Error:")
+    # print(error)
+    # display_graph("Linkedin")
 
     def onClick_pushButton_quit(self):
         sys.exit()
@@ -190,6 +193,7 @@ class MainWindow(object):
         obj_listEditDelete.setupUi(dialog_listEditDelete)
         dialog_listEditDelete.exec()
         self.updateListWidget()
+
 
 def run_command(command):
     process = subprocess.Popen(command)
