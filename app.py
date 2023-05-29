@@ -2,37 +2,38 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
+import pandas as pd
 from dash.dependencies import Input, Output, State
-from displayGraph import display_graph_time, display_graph_keywords
 from datetime import datetime
-from review_analysis import reviews_to_analysis, latest_first_date_earliest_second_date
-from reviews_by_keyword import show_reviews_by_keyword
+from reviews_to_analysis2v1 import driver_reviews, get_reviews, get_reviews_by_user_tags
+from make_graph import run_graph_time, run_graph_keyword
 
-
-time_start = "04/01/2023"
-time_end = "05/18/2023"
 app_name = "Twitter"
-keyword = ""
-day = "2023/04/15"
+keywords = ["elon"]
 directory = "Data/{}".format(app_name)
-print("this is runned")
-list_reviews = reviews_to_analysis(time_start, time_end, directory)
-start_date_reviews = list_reviews[0][1]
-end_date_reviews = list_reviews[len(list_reviews) - 1][1]
-start_date_reviews = "{}/{}/{}".format(
-    start_date_reviews[1], start_date_reviews[2], start_date_reviews[0]
-)
-end_date_reviews = "{}/{}/{}".format(
-    end_date_reviews[1], end_date_reviews[2], end_date_reviews[0]
-)
-print("this too")
+df_reviews=driver_reviews(directory)
+
+time_start="2023-04-01"
+time_end="2023-05-07"
+#list_reviews = reviews_to_analysis(time_start, time_end, directory)
+#start_date_reviews = list_reviews[0][1]
+#end_date_reviews = list_reviews[len(list_reviews) - 1][1]
+#start_date_reviews = "{}/{}/{}".format(
+ #   start_date_reviews[1], start_date_reviews[2], start_date_reviews[0]
+#)
+#end_date_reviews = "{}/{}/{}".format(
+#    end_date_reviews[1], end_date_reviews[2], end_date_reviews[0]
+#)
+#print("this too")
 # Create a Dash app
 app = dash.Dash(__name__)
 
 # Call the display_graph_time function with the selected start and end dates and keyword
+#fig = display_graph_time(end_date_reviews, start_date_reviews, keyword, list_reviews)
+#fig2 = display_graph_keywords(time_start, time_end, list_reviews)
 
-fig = display_graph_time(end_date_reviews, start_date_reviews, keyword, list_reviews)
-fig2 = display_graph_keywords(time_start, time_end, list_reviews)
+fig= run_graph_time(time_start,time_end,keywords,df_reviews)
+fig2=run_graph_keyword(time_start,time_end,df_reviews)
 # Define the layout of the app
 scroll_box_content = []
 scroll_box = html.Div(
@@ -84,6 +85,10 @@ app.layout = html.Div(
                 ),
             ]
         ),
+
+
+
+
         html.Div(
             [
                 html.H1(
@@ -105,7 +110,15 @@ app.layout = html.Div(
                     figure=fig2,
                     style={"backgroundColor": "#F2F2F2"},
                 ),
-                html.H1("Search for reviews by keyword and date"),
+                
+            ]
+        ),
+
+    html.Div([
+
+
+
+        html.H1("Search for reviews by keyword and date"),
                 dcc.DatePickerRange(
                     id="date-picker-range3",
                     start_date_placeholder_text="Start Date",
@@ -119,11 +132,16 @@ app.layout = html.Div(
                     type="text",
                     value="",
                 ),
+                
+                html.Button('See Negative Reviews', id='button4', className='my-button'),
+                html.Button('See positive reviews', id='button5', className='my-button'),
+                dcc.Input(id='input-text', type='text',placeholder="See by topic"),
                 html.Button("Update", id="button3"),
+                html.Div(id='output-div'),
                 scroll_box,
                 html.Hr(style={"margin-top": "400px"}),
-            ]
-        ),
+
+    ]),
     ],
     style={"backgroundColor": "#F2F2F2"},
 )
@@ -140,22 +158,15 @@ app.layout = html.Div(
     ],
 )
 def update_graph(n_clicks, start_date, end_date, keyword):
-    print("start_date", start_date)
-    print("end_date", end_date)
+   # print("start_date", start_date)
+   # print("end_date", end_date)
     if start_date is None or end_date is None:
         print("start_date or end_date is None")
         return dash.no_update
     if n_clicks is not None:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d").strftime("%m/%d/%Y")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d").strftime("%m/%d/%Y")
+        keywords= keyword.split(",")
         # Call the display_graph_time function with the selected start and end dates and keyword
-        [date_1, date_2] = latest_first_date_earliest_second_date(
-            start_date_reviews, end_date, end_date_reviews, start_date
-        )
-        print("date_1", date_1)
-        print("date_2:", date_2)
-
-        fig = display_graph_time(date_2, date_1, keyword, list_reviews)
+        fig = run_graph_time(start_date,end_date,keywords,df_reviews)
         return fig
     else:
         return dash.no_update
@@ -175,54 +186,58 @@ def update_graph2(n_clicks, start_date, end_date):
         print("start_date or end_date is None")
         return dash.no_update
     if n_clicks is not None:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d").strftime("%m/%d/%Y")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d").strftime("%m/%d/%Y")
         # Call the display_graph_time function with the selected start and end dates and keyword
-        try:
-            fig2 = display_graph_keywords(start_date, end_date, list_reviews)
-
-        except:
-            print("error 1000")
-            return dash.no_update
+        fig2=run_graph_keyword(start_date,end_date,df_reviews)
         return fig2
     else:
         return dash.no_update
 
 
+
 @app.callback(
     Output("content", "children"),
     [Input("button3", "n_clicks")],
-    [
-        State("date-picker-range3", "start_date"),
-        State("date-picker-range3", "end_date"),
-        State("keyword-input2", "value"),
-    ],
+    [State("date-picker-range3", "start_date")],
+    [State("date-picker-range3", "end_date")],
+    [State("keyword-input2", "value")],
+    [Input('button4', 'n_clicks')],
+    [Input('button5', 'n_clicks')],
+    [State('input-text', 'value')],
 )
-def update_scroll_box(n_clicks, start_date, end_date, keyword):
+
+def update_scroll_box(n_clicks, start_date, end_date, keyword,n1_clicks,n2_clicks,value):
     if start_date is None or end_date is None:
         print("start_date or end_date is None")
         return dash.no_update
-    if n_clicks is not None:
+    if n_clicks is not None or n1_clicks is not None or n2_clicks is not None:
         scroll_box_content = []
-        start_date = datetime.strptime(start_date, "%Y-%m-%d").strftime("%m/%d/%Y")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d").strftime("%m/%d/%Y")
-        print(keyword, start_date, end_date)
-        reviews = show_reviews_by_keyword(start_date, end_date, keyword, directory)
-        for review in reviews:
-            scroll_box_content.append(html.H1(f"{review[1]}, {review[3]} "))
+        if keyword is not None:
+            keywords= keyword.split(",")
+        else: keywords=[""]
+        if value is not None:
+            value=value.split(",")
+        df_reviews_by_keyword = get_reviews(df_reviews,keywords,start_date,end_date).sort_index(ascending=False)
+        if n2_clicks is not None and n1_clicks is None:
+            df_reviews_by_keyword=df_reviews_by_keyword[df_reviews_by_keyword["sentiment_polarity"]>0]
+        elif n1_clicks is not None and n2_clicks is None:
+            df_reviews_by_keyword=df_reviews_by_keyword[df_reviews_by_keyword["sentiment_polarity"]<=0]
+        if value is not None:
+            df_reviews_by_keyword=get_reviews_by_user_tags(value, df_reviews_by_keyword)
+
+
+        for i in range(len(df_reviews_by_keyword)):
+            scroll_box_content.append(html.H1("{}, {} ".format(df_reviews_by_keyword["userName"][i],df_reviews_by_keyword["days"][i])))
             scroll_box_content.append(html.Hr())
-            scroll_box_content.append(html.P(f"{review[0]}"))
+            scroll_box_content.append(html.P("{}".format(df_reviews_by_keyword["content"][i])))
             scroll_box_content.append(html.Hr())
-        print(reviews)
         return scroll_box_content
 
     else:
         return dash.no_update
 
 
-# app.css.append_css({"external_url": "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"})
-# app.css.append_css({"external_url": "path/to/my/styles.css"})
 
 # Run the app
+
 if __name__ == "__main__":
     app.run_server(debug=True)

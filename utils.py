@@ -1,7 +1,8 @@
 import pickle
+import os
 from os import path
 import pandas as pd
-
+from datetime import datetime
 
 def printProgressBar(
     iteration,
@@ -10,7 +11,7 @@ def printProgressBar(
     suffix="",
     decimals=1,
     length=100,
-    fill="█",
+    fill="",
     printEnd="\r",
 ):
     """
@@ -67,3 +68,54 @@ def retrieve_app_id(appname):
     except:
         print(f"{appname} not in map.")
     return id
+
+
+def order_csv_files(directory, descending=False):
+    # get the current directory
+
+    # change this to the directory where the csv files are located at
+    arr_filenames = []
+    # loop through all files in the current directory
+    for filename in os.listdir(directory):
+        # check if the current item is a file
+        if os.path.isfile(os.path.join(directory, filename)):
+            if filename != "Continuation_Token.pkl":
+                arr_filenames.append(filename)
+
+    arr_filenames = [os.path.splitext(x)[0].replace("_", "-") for x in arr_filenames]
+    arr_dates = [datetime.strptime(x, "%d-%m-%Y-%H-%M-%S") for x in arr_filenames]
+    arr_dates = sorted(arr_dates, reverse=descending)
+    arr_dates = [x.strftime("%d-%m-%Y_%H-%M-%S") for x in arr_dates]
+    return arr_dates
+
+
+def append_df(directory,arr_files):
+    df_reviews= pd.DataFrame()
+    for i in range(len(arr_files)):
+        if os.path.isfile(os.path.join(directory, "{}.csv".format(arr_files[i]))):
+            data = pd.read_csv(
+                 os.path.join(directory, "{}.csv".format(arr_files[i])),
+                    sep=",",
+                    engine="python",
+                    on_bad_lines='skip',
+                    usecols=['reviewId', 'userName', 'content', 'score', 'thumbsUpCount','at']
+                )
+            df_reviews = pd.concat([df_reviews,data], ignore_index=True)
+    return df_reviews
+
+def keyword_in_review(keywords,review):
+    for i in keywords:
+        if i in review:
+            return True
+    return False
+
+
+
+
+
+def first_date_before_second_date(first_date,second_date):
+    first_date=datetime.strptime(first_date, '%Y-%m-%d')
+    second_date=datetime.strptime(second_date, '%Y-%m-%d')
+
+    return first_date<=second_date
+
