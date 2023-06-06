@@ -1,4 +1,3 @@
-
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -6,44 +5,37 @@ import plotly.offline as pyo
 
 from reviews_to_analysis2v1 import (
     keywords_positive_negative_time,
-    all_keywords_positive_negative
+    get_keywords_dict,
 )
+
 
 def run_graph_keyword(time_start, time_end, df_reviews):
     (
-        list_keywords_positive_reviews,
-        list_keywords_negative_reviews,
-    ) = all_keywords_positive_negative(df_reviews,time_start,time_end)
-    list_keywords_negative_reviews =sorted(list_keywords_negative_reviews.items(), key=lambda x: x[1], reverse=True)
-    list_keywords_positive_reviews = sorted(list_keywords_positive_reviews.items(), key=lambda x: x[1], reverse=True)
+        dict_keywords_count_positive,
+        dict_keywords_count_negetive,
+    ) = get_keywords_dict(df_reviews, time_start, time_end)
+    dict_keywords_count_negetive = sorted(
+        dict_keywords_count_negetive.items(), key=lambda x: x[1], reverse=True
+    )
+    dict_keywords_count_positive = sorted(
+        dict_keywords_count_positive.items(), key=lambda x: x[1], reverse=True
+    )
     return make_graph_keywords(
-        list_keywords_negative_reviews, list_keywords_positive_reviews
+        dict_keywords_count_negetive, dict_keywords_count_positive
     )
 
+
 def run_graph_time(time_start, time_end, keywords, df_reviews):
-    return make_graph(time_start,time_end,keywords,df_reviews)
+    return make_graph(time_start, time_end, keywords, df_reviews)
 
 
-def make_graph(time_start,time_end,keywords,df_reviews):
-    # print([i[1] for i in list_reviews])
-   # start_date_reviews = list_reviews[0][1]
-   # end_date_reviews = list_reviews[len(list_reviews) - 1][1]
-   # start_date_reviews = "{}/{}/{}".format(
-   #     start_date_reviews[1], start_date_reviews[2], start_date_reviews[0]
-   # )
-   # end_date_reviews = "{}/{}/{}".format(
-   #     end_date_reviews[1], end_date_reviews[2], end_date_reviews[0]
-   # )
-    #(data_negative, data_positive) = get_data_negpos(
-     #   keyword_counter(keyword, list_reviews, time_frame, time_start, time_end)
-    #)
-
-    keyword_time = keywords_positive_negative_time(keywords,df_reviews,time_start,time_end)
+def make_graph(time_start, time_end, keywords, df_reviews):
+    keyword_time = keywords_positive_negative_time(
+        keywords, df_reviews, time_start, time_end
+    )
     data_positive = keyword_time["positive_reviews"]
-    data_negative= keyword_time["negative_reviews"]
+    data_negative = keyword_time["negative_reviews"]
     dates = keyword_time["days"]
-
-
 
     x = pd.date_range(time_start, time_end, freq="d")
     fig = go.Figure()
@@ -95,12 +87,11 @@ def make_graph(time_start,time_end,keywords,df_reviews):
     return fig
 
 
-
-def make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews):
-    keyword_negative= [list_keywords_negative_reviews[i][0] for i in range(50)]
-    keyword_positive=[list_keywords_positive_reviews[i][0] for i in range(50)]
-    freq_negative= [list_keywords_negative_reviews[i][1] for i in range(50)]
-    freq_positive= [list_keywords_positive_reviews[i][1] for i in range(50)]
+def make_graph_keywords(dict_keywords_count_negetive, dict_keywords_count_positive):
+    keyword_negative = dict_keywords_count_negetive[:50][0]
+    keyword_positive = dict_keywords_count_positive[:50][0]
+    freq_negative = dict_keywords_count_negetive[:50][1]
+    freq_positive = dict_keywords_count_positive[:50][1]
 
     fig = make_subplots(
         rows=2,
