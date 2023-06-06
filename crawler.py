@@ -17,26 +17,57 @@ def clean_review(review):
     return " ".join(words_new)
 
 
-def crawler(app_id, continuation_token=None, epochs=10, batch_size=100):
+def crawler(
+    app_id, continuation_token=None, epochs=10, start_date=None, batch_size=100
+):
     final_result = []
-    utils.printProgressBar(
-        0, epochs, prefix="Collection Progress:", suffix="Complete", length=50
-    )
-    for i in range(epochs):
-        result, continuation_token = reviews(
-            app_id=app_id,
-            sort=Sort.NEWEST,
-            count=batch_size,
-            continuation_token=continuation_token,
-        )
-        final_result += result
+    if start_date == None:
         utils.printProgressBar(
-            i + 1, epochs, prefix="Collection Progress:", suffix="Complete", length=50
+            0, epochs, prefix="Collection Progress:", suffix="Complete", length=50
         )
-    return final_result, continuation_token
+    try:
+        if start_date == None:
+            print("Epochs")
+            for i in range(epochs):
+                result, continuation_token = reviews(
+                    app_id=app_id,
+                    sort=Sort.NEWEST,
+                    count=batch_size,
+                    continuation_token=continuation_token,
+                )
+                final_result += result
+                utils.printProgressBar(
+                    i + 1,
+                    epochs,
+                    prefix="Collection Progress:",
+                    suffix="Complete",
+                    length=50,
+                )
+        else:
+            print("StartDate")
+            stop = False
+            while not stop:
+                result, continuation_token = reviews(
+                    app_id=app_id,
+                    sort=Sort.NEWEST,
+                    count=batch_size,
+                    continuation_token=continuation_token,
+                )
+                final_result += result
+                if result[-1]["at"] < start_date:
+                    print("Stopping")
+                    stop = True
+    except:
+        print("Couldnt finish collection.")
+    finally:
+        print(f"Total reviews collected: {len(final_result)}")
+        return final_result, continuation_token
 
 
-def driverCrawler(app_name, app_id, epochs=10, batch_size=100):
+# driverCrawler has 2 modes of calling:
+# 1: When you dont provide start_date, it runs for given epochs.
+# 2: When you provide a start_date, it will fetch all reviews till that date.
+def driverCrawler(app_name, app_id, epochs=10, start_date=None, batch_size=100):
     print(f"Running Crawler for {app_name} with id {app_id}")
     subdirs = listdir("Data")
     final_path = path.join("Data", app_name)
@@ -48,10 +79,12 @@ def driverCrawler(app_name, app_id, epochs=10, batch_size=100):
         print("Creating new")
         mkdir(final_path)
         continuation_token = None
+
     result, continuation_token = crawler(
         app_id=app_id,
         continuation_token=continuation_token,
         epochs=epochs,
+        start_date=start_date,
         batch_size=batch_size,
     )
     for review in result:
@@ -70,4 +103,5 @@ def driverCrawler(app_name, app_id, epochs=10, batch_size=100):
 if __name__ == "__main__":
     app_name = "Instagram"
     app_id = "com.instagram.android"
-    driverCrawler(app_name, epochs=100)
+    start_date = datetime.strptime("15/05/23", "%d/%m/%y")
+    driverCrawler(app_name, app_id, start_date=start_date)

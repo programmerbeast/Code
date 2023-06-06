@@ -7,9 +7,13 @@
 
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from displayGraph import display_graph
+
 from uiDialog import NewAppDialog, ChangeAppDialog
 from crawler import driverCrawler
+import subprocess
+import threading
+
+command = ["python", "app.py"]
 
 
 class MainWindow(object):
@@ -158,7 +162,8 @@ class MainWindow(object):
             )  # change the epochs to incerease number of reviews
 
     def onClick_pushButton_displayGraph(self):
-        display_graph()
+        thread = threading.Thread(target=run_command, args=(command,))
+        thread.start()
 
     def onClick_pushButton_quit(self):
         sys.exit()
@@ -173,6 +178,11 @@ class MainWindow(object):
         obj_listEditDelete.setupUi(dialog_listEditDelete)
         dialog_listEditDelete.exec()
         self.updateListWidget()
+
+
+def run_command(command):
+    process = subprocess.Popen(command)
+    process.communicate()
 
 
 if __name__ == "__main__":

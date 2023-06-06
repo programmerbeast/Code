@@ -2,3 +2,15 @@ google_play_scraper==1.2.3
 pandas==1.4.3
 pyside6==6.5.0
 plotly==5.14.1
+dash==2.9.3
+dash-core-components==2.0.0
+dash-html-components==2.0.0
+dash-table==5.0.0
+Flask==2.3.2
+sklearn==0.0.post5
+sklearn-features==0.0.2
+clean-text==0.6.0
+google_play_scraper==1.2.3
+pandas==1.4.3
+pyside6==6.5.0
+plotly==5.14.1

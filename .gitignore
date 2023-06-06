@@ -1,4 +1,6 @@
+*.ipynb
 env/
 personal/
+Data/
+.vscode/
 __pycache__/
-.vscode
