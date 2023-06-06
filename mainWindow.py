@@ -7,19 +7,24 @@
 
 
 from PySide6 import QtCore, QtGui, QtWidgets
-
+from reviews_to_analysis2v1 import driver_reviews
 from uiDialog import NewAppDialog, ChangeAppDialog
 from crawler import driverCrawler
 import subprocess
 import threading
+import os
+import sys
+k=-1
 
-command = ["python", "app.py"]
+
+command = ["python", "app2.py"]
 
 
 class MainWindow(object):
     def __init__(self):
         # List of Dict(appName, appId)
         self.appList = []
+        self.thread = None
 
     def setupUi(self, MainWindow):
         # Ui setup
@@ -163,8 +168,29 @@ class MainWindow(object):
 
     def onClick_pushButton_displayGraph(self):
         # Create a new thread and run the command in it
-        thread = threading.Thread(target=run_command, args=(command,))
-        thread.start()
+    
+        
+
+
+
+        selected_item = self.listWidget.currentItem()
+        if selected_item is not None:
+            global k
+            k+=1
+            app_name = selected_item.text()
+            print(app_name)
+            #df_reviews=driver_reviews(app_name)
+            #output_file = os.path.join("saved_dataframes", "reviews.csv")
+            #f_reviews.to_csv(output_file, index=False)
+            print("aaa")
+            print(self.thread)
+           # if self.thread and self.thread.is_alive():
+           #     self.thread.join()
+            print("vdfg")
+
+    
+            self.thread = threading.Thread(target=run_command, args=(command, app_name,k))
+            self.thread.start()
         # stdout=subprocess.PIPE, stderr=subprocess.PIPE
         # Wait for the process to finish and get the output
 
@@ -195,14 +221,13 @@ class MainWindow(object):
         self.updateListWidget()
 
 
-def run_command(command):
-    process = subprocess.Popen(command)
+def run_command(command,arg1,arg2):
+    command2=command + [arg1] + [str(arg2)]
+    process = subprocess.Popen(command2)
     process.communicate()
 
 
 if __name__ == "__main__":
-    import sys
-
     app = QtWidgets.QApplication(sys.argv)
     mainWindow = QtWidgets.QMainWindow()
     ui = MainWindow()

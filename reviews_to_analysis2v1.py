@@ -32,8 +32,8 @@ def get_synonyms2(words):
         synonyms = sorted(list(set(synonyms)))
         
         # Print the synonyms
-        for synonym in synonyms:
-            print(synonym)
+       # for synonym in synonyms:
+           # print(synonym)
         
         all_synonyms.extend(synonyms)
     all_synonyms.extend(words)
@@ -70,13 +70,15 @@ def keywords_positive_negative_time(keywords, df_reviews,time_start,time_end):
     less_than_zero=pd.DataFrame()
     is_zero=pd.DataFrame()
     for i in keywords:
-        greater_than_zero=pd.concat([greater_than_zero,df_reviews[(df_reviews['sentiment_polarity'] > 0) & (df_reviews['content'].str.contains(i, case=False))]])
-        less_than_zero=pd.concat([less_than_zero,df_reviews[(df_reviews['sentiment_polarity'] <= 0) & (df_reviews['content'].str.contains(i, case=False))]])
+        greater_than_zero=pd.concat([greater_than_zero,df_reviews[(df_reviews['sentiment_polarity'] >= 0) & (df_reviews['content'].str.contains(i, case=False))]])
+        less_than_zero=pd.concat([less_than_zero,df_reviews[(df_reviews['sentiment_polarity'] < 0) & (df_reviews['content'].str.contains(i, case=False))]])
+        is_zero = pd.concat([is_zero,df_reviews[(df_reviews['sentiment_polarity'] == 0) & (df_reviews['content'].str.contains(i, case=False))]])
 
     greater_than_zero_counts = greater_than_zero.groupby(["days"]).size().rename('positive_reviews')
     less_than_zero_counts = less_than_zero.groupby(["days"]).size().rename('negative_reviews')
-    #is_zero= is_zero.groupby(level=0).size().rename('Float = 0')
+    is_zero = is_zero.groupby(["days"]).size().rename('neutral_reviews')
     result_df = pd.merge(greater_than_zero_counts, less_than_zero_counts, how='outer', left_index=True, right_index=True)
+    result_df = pd.merge(result_df, is_zero, how='outer', left_index=True, right_index=True)
     #result_df = pd.merge(result_df, is_zero, how='outer', left_index=True, right_index=True)
     result_df.fillna(0, inplace=True)  # Fill NaN values with 0
     #result_df= result_df[first_date_before_second_date(time_start,str(result_df.index)) and first_date_before_second_date(str(result_df.index),time_end)]
@@ -109,10 +111,13 @@ def keyword_extraction(review):
 
     return keywords
 
-def driver_reviews(directory):
+def driver_reviews(app_name):
     folder_path = 'saved_dataframes'  # Specify the folder path
     df_saved=pd.DataFrame()
 # Check if the folder contains any CSV files
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
     csv_files = [file for file in os.listdir(folder_path) if file.endswith('.csv')]
     if csv_files:
         df_saved= append_df(folder_path,csv_files)
@@ -120,7 +125,7 @@ def driver_reviews(directory):
 
 
 
-    app_name = "Twitter"
+    #app_name = "Twitter"
     directory = "Data/{}".format(app_name)
     arr_files=order_csv_files(directory,descending=False)
     df_reviews=append_df(directory,arr_files)
@@ -145,7 +150,7 @@ def driver_reviews(directory):
     df_reviews["keywords"] = df_reviews["content"].transform(lambda x: keyword_extraction(x))
 
     df_reviews = df_reviews.drop(df_reviews[df_reviews['keywords'].apply(lambda x: len(x) == 0)].index)
-
+   # print(df_reviews)
     
     return df_reviews
 
@@ -162,12 +167,12 @@ def all_keywords_positive_negative(df_reviews, time_start, time_end):
     df_reviews_in_time=df_reviews[df_reviews["days"].apply(lambda x: first_date_before_second_date(time_start,x)) & df_reviews["days"].apply(lambda x: first_date_before_second_date(x,time_end))]
     for i in range(len(df_reviews_in_time)):
         for j in df_reviews_in_time["keywords"][i]:
-            if(df_reviews_in_time["sentiment_polarity"][i]>0):
+            if(df_reviews_in_time["sentiment_polarity"][i]>=0):
                 if j in positive_keywords_dict:
                     positive_keywords_dict[j]+=1
                 else:
                     positive_keywords_dict[j]= 1
-            elif (df_reviews_in_time["sentiment_polarity"][i]<=0):
+            elif (df_reviews_in_time["sentiment_polarity"][i]<0):
                 if j in negative_keywords_dict:
                     negative_keywords_dict[j]+=1
                 else : 

@@ -1,8 +1,11 @@
 import pickle
 import os
+import pyautogui
 from os import path
 import pandas as pd
 from datetime import datetime
+
+
 
 def printProgressBar(
     iteration,
@@ -119,3 +122,7 @@ def first_date_before_second_date(first_date,second_date):
 
     return first_date<=second_date
 
+
+def get_screen_size():
+    width, height= pyautogui.size()
+    return (width,height)
