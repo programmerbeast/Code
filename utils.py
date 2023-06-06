@@ -6,7 +6,6 @@ import pandas as pd
 from datetime import datetime
 
 
-
 def printProgressBar(
     iteration,
     total,
@@ -92,37 +91,42 @@ def order_csv_files(directory, descending=False):
     return arr_dates
 
 
-def append_df(directory,arr_files):
-    df_reviews= pd.DataFrame()
+def append_df(directory, arr_files):
+    df_reviews = pd.DataFrame()
     for i in range(len(arr_files)):
         if os.path.isfile(os.path.join(directory, "{}.csv".format(arr_files[i]))):
             data = pd.read_csv(
-                 os.path.join(directory, "{}.csv".format(arr_files[i])),
-                    sep=",",
-                    engine="python",
-                    on_bad_lines='skip',
-                    usecols=['reviewId', 'userName', 'content', 'score', 'thumbsUpCount','at']
-                )
-            df_reviews = pd.concat([df_reviews,data], ignore_index=True)
+                os.path.join(directory, "{}.csv".format(arr_files[i])),
+                sep=",",
+                engine="python",
+                on_bad_lines="skip",
+                usecols=[
+                    "reviewId",
+                    "userName",
+                    "content",
+                    "score",
+                    "thumbsUpCount",
+                    "at",
+                ],
+            )
+            df_reviews = pd.concat([df_reviews, data], ignore_index=True)
     return df_reviews
 
-def keyword_in_review(keywords,review):
+
+def keyword_in_review(keywords, review):
     for i in keywords:
         if i in review:
             return True
     return False
 
 
+def first_date_before_second_date(first_date, second_date):
+    first_date = datetime.strptime(first_date, "%Y-%m-%d")
+    second_date = datetime.strptime(second_date, "%Y-%m-%d")
 
-
-
-def first_date_before_second_date(first_date,second_date):
-    first_date=datetime.strptime(first_date, '%Y-%m-%d')
-    second_date=datetime.strptime(second_date, '%Y-%m-%d')
-
-    return first_date<=second_date
+    return first_date <= second_date
 
 
 def get_screen_size():
-    width, height= pyautogui.size()
-    return (width,height)
+    width, height = pyautogui.size()
+    return (width, height)

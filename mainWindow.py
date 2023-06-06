@@ -14,10 +14,11 @@ import subprocess
 import threading
 import os
 import sys
-k=-1
+
+k = -1
 
 
-command = ["python", "app2.py"]
+command = ["python", "app.py"]
 
 
 class MainWindow(object):
@@ -168,28 +169,25 @@ class MainWindow(object):
 
     def onClick_pushButton_displayGraph(self):
         # Create a new thread and run the command in it
-    
-        
-
-
 
         selected_item = self.listWidget.currentItem()
         if selected_item is not None:
             global k
-            k+=1
+            k += 1
             app_name = selected_item.text()
-            print(app_name)
-            #df_reviews=driver_reviews(app_name)
-            #output_file = os.path.join("saved_dataframes", "reviews.csv")
-            #f_reviews.to_csv(output_file, index=False)
-            print("aaa")
-            print(self.thread)
-           # if self.thread and self.thread.is_alive():
-           #     self.thread.join()
-            print("vdfg")
+            # print(app_name)
+            # df_reviews=driver_reviews(app_name)
+            # output_file = os.path.join("saved_dataframes", "reviews.csv")
+            # f_reviews.to_csv(output_file, index=False)
+            # print("aaa")
+            # print(self.thread)
+            # if self.thread and self.thread.is_alive():
+            #     self.thread.join()
+            # print("vdfg")
 
-    
-            self.thread = threading.Thread(target=run_command, args=(command, app_name,k))
+            self.thread = threading.Thread(
+                target=run_command, args=(command, app_name, k)
+            )
             self.thread.start()
         # stdout=subprocess.PIPE, stderr=subprocess.PIPE
         # Wait for the process to finish and get the output
@@ -221,8 +219,8 @@ class MainWindow(object):
         self.updateListWidget()
 
 
-def run_command(command,arg1,arg2):
-    command2=command + [arg1] + [str(arg2)]
+def run_command(command, arg1, arg2):
+    command2 = command + [arg1] + [str(arg2)]
     process = subprocess.Popen(command2)
     process.communicate()
 
