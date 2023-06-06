@@ -84,14 +84,14 @@ app.layout = html.Div(
                             ],
                         ),
                     ],
-                    style={"flex-direction": "column"},
+                    style={"flex-direction": "column", "display": "none"},
                 ),
                 html.Div(
                     style={
                         "borderLeft": "1px solid black",
                         "height": "500px",
                         "margin": "0 10px",
-                        "display": "inline-block",
+                        "display": "none",
                         "verticalAlign": "middle",
                     }
                 ),
