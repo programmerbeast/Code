@@ -175,3 +175,7 @@ def make_graph_keywords(dict_keywords_count_negetive, dict_keywords_count_positi
     fig.update_yaxes(title_text="Frequency", tickfont=dict(size=20))
     fig.update_annotations(font_size=40)
     return fig
+
+
+if __name__ == "__main__":
+    pass
