@@ -1,7 +1,4 @@
 import os
-from datetime import date
-from datetime import datetime
-import nltk
 from textblob import TextBlob
 import pandas as pd
 from utils import (
@@ -15,17 +12,13 @@ from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import wordnet
 
 
-def get_synonyms2(words):
+def get_synonyms(words):
     all_synonyms = []
-
     for word in words:
-        # print(f"Synonyms for '{word}':")
-
         synonyms = []
 
         # Retrieve synsets for the word
         synsets = wordnet.synsets(word)
-
         # Extract synonyms from synsets
         for synset in synsets:
             for lemma in synset.lemmas():
@@ -35,11 +28,6 @@ def get_synonyms2(words):
 
         # Remove duplicates and sort the synonyms
         synonyms = sorted(list(set(synonyms)))
-
-        # Print the synonyms
-        # for synonym in synonyms:
-        # print(synonym)
-
         all_synonyms.extend(synonyms)
     all_synonyms.extend(words)
     return all_synonyms
@@ -53,22 +41,15 @@ def synonym_related(review_keywords, synonyms_list):
     return False
 
 
-def get_reviews_by_user_tags(tags, df_reviews):
+def get_reviews_by_keyword(keywords, df_reviews):
     list_synonyms = []
-    first_synonyms = get_synonyms2(tags)
-
-    # if(len(first_synonyms)<5):
-    #   for i in first_synonyms:
-    #      list_synonyms = list_synonyms + get_synonyms2(i)
-    # list_synonyms=list(set(list_synonyms))
-
-    # else:
+    first_synonyms = get_synonyms(keywords)
     list_synonyms = first_synonyms
-    df_synonyms = df_reviews[
+    df_containing_keywords = df_reviews[
         df_reviews["keywords"].apply(lambda x: synonym_related(x, list_synonyms))
     ]
+    return df_containing_keywords
 
-    return df_synonyms
 
 
 def sentiment_analysis(review):
@@ -126,21 +107,16 @@ def keywords_positive_negative_time(keywords, df_reviews, time_start, time_end):
     result_df = pd.merge(
         result_df, is_zero, how="outer", left_index=True, right_index=True
     )
-    # result_df = pd.merge(result_df, is_zero, how='outer', left_index=True, right_index=True)
-    result_df.fillna(0, inplace=True)  # Fill NaN values with 0
-    # result_df= result_df[first_date_before_second_date(time_start,str(result_df.index)) and first_date_before_second_date(str(result_df.index),time_end)]
-    # result_df = result_df[result_df.index.apply(lambda x: first_date_before_second_date(time_start,str(x))) & result_df.index.apply(lambda x: first_date_before_second_date(str(x),time_end))]
+    result_df.fillna(0, inplace=True)  # Fill NaN values with 0   
     result_df.reset_index(inplace=True)
     result_df = result_df[
         result_df["days"].apply(lambda x: first_date_before_second_date(time_start, x))
         & result_df["days"].apply(lambda x: first_date_before_second_date(x, time_end))
     ]
-
     return result_df
 
 
 def keyword_extraction(review):
-    # Combine single-word and bi-gram keywords
     keywords = []
 
     # Single-word keywords
@@ -164,20 +140,18 @@ def keyword_extraction(review):
     return keywords
 
 
-def driver_reviews(app_name):
-    folder_path = "saved_dataframes"  # Specify the folder path
+def analyze_reviews(app_name):
+    folder_path = "saved_dataframes"
     df_saved = pd.DataFrame()
-    # Check if the folder contains any CSV files
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
-
+    # Check if the folder contains any CSV files
     csv_files = [file for file in os.listdir(folder_path) if file.endswith(".csv")]
     if csv_files:
         df_saved = append_df(folder_path, csv_files)
     else:
         print("No csv files found")
 
-    # app_name = "Twitter"
     directory = "Data/{}".format(app_name)
     arr_files = order_csv_files(directory, descending=False)
     df_reviews = append_df(directory, arr_files)
@@ -207,7 +181,6 @@ def driver_reviews(app_name):
     df_reviews = df_reviews.drop(
         df_reviews[df_reviews["keywords"].apply(lambda x: len(x) == 0)].index
     )
-    # print(df_reviews)
 
     return df_reviews
 
@@ -222,7 +195,7 @@ def get_reviews(df_reviews, keywords, time_start, time_end):
     ]
 
 
-def all_keywords_positive_negative(df_reviews, time_start, time_end):
+def get_keywords_dict(df_reviews, time_start, time_end):
     positive_keywords_dict = {}
     negative_keywords_dict = {}
     df_reviews_in_time = df_reviews[
@@ -231,12 +204,12 @@ def all_keywords_positive_negative(df_reviews, time_start, time_end):
     ]
     for i in range(len(df_reviews_in_time)):
         for j in df_reviews_in_time["keywords"][i]:
-            if df_reviews_in_time["sentiment_polarity"][i] >= 0:
+            if df_reviews_in_time["sentiment_polarity"][i] > 0:
                 if j in positive_keywords_dict:
                     positive_keywords_dict[j] += 1
                 else:
                     positive_keywords_dict[j] = 1
-            elif df_reviews_in_time["sentiment_polarity"][i] < 0:
+            elif df_reviews_in_time["sentiment_polarity"][i] <= 0:
                 if j in negative_keywords_dict:
                     negative_keywords_dict[j] += 1
                 else:

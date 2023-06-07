@@ -7,7 +7,11 @@ import plotly.express as px
 import pandas as pd
 from dash.dependencies import Input, Output, State
 from datetime import datetime
-from reviews_to_analysis2v1 import driver_reviews, get_reviews, get_reviews_by_user_tags
+from reviews_to_analysis2v1 import (
+    analyze_reviews,
+    get_reviews,
+    get_reviews_by_keyword,
+)
 from make_graph import run_graph_time, run_graph_keyword
 import sys
 import webbrowser
@@ -21,7 +25,7 @@ app_name = sys.argv[1]
 # app_name = "Twitter"
 keywords = [""]
 directory = "Data/{}".format(app_name)
-df_reviews = driver_reviews(app_name)
+df_reviews = analyze_reviews(app_name)
 
 time_start = df_reviews["days"][0]
 time_end = df_reviews["days"][-1]
@@ -195,8 +199,7 @@ app.layout = html.Div(
                 html.Div(id="output-div"),
                 scroll_box,
                 html.Hr(style={"margin-top": "400px"}),
-            ],
-            # style={"width": "100%", "clear": "both"},
+            ]
         ),
     ],
     # style={"backgroundColor": "#F2F2F2", "gap": "20px"},
@@ -285,9 +288,7 @@ def update_scroll_box(
                 df_reviews_by_keyword["sentiment_polarity"] <= 0
             ]
         if value is not None:
-            df_reviews_by_keyword = get_reviews_by_user_tags(
-                value, df_reviews_by_keyword
-            )
+            df_reviews_by_keyword = get_reviews_by_keyword(value, df_reviews_by_keyword)
 
         for i in range(len(df_reviews_by_keyword)):
             scroll_box_content.append(

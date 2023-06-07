@@ -7,12 +7,11 @@
 
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from reviews_to_analysis2v1 import driver_reviews
 from uiDialog import NewAppDialog, ChangeAppDialog
 from crawler import driverCrawler
 import subprocess
 import threading
-import os
+
 import sys
 
 k = -1
@@ -175,34 +174,12 @@ class MainWindow(object):
             global k
             k += 1
             app_name = selected_item.text()
-            # print(app_name)
-            # df_reviews=driver_reviews(app_name)
-            # output_file = os.path.join("saved_dataframes", "reviews.csv")
-            # f_reviews.to_csv(output_file, index=False)
-            # print("aaa")
-            # print(self.thread)
-            # if self.thread and self.thread.is_alive():
-            #     self.thread.join()
-            # print("vdfg")
+            
 
             self.thread = threading.Thread(
                 target=run_command, args=(command, app_name, k)
             )
             self.thread.start()
-        # stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        # Wait for the process to finish and get the output
-
-        # Decode the output and error messages
-        # output = output.decode('utf-8')
-        # error = error.decode('utf-8')
-
-        # Print the output and error messages
-
-    # print("Output:")
-    # print(output)
-    # print("Error:")
-    # print(error)
-    # display_graph("Linkedin")
 
     def onClick_pushButton_quit(self):
         sys.exit()

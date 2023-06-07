@@ -5,7 +5,7 @@ import plotly.offline as pyo
 from utils import get_screen_size
 from reviews_to_analysis2v1 import (
     keywords_positive_negative_time,
-    all_keywords_positive_negative,
+    get_keywords_dict,
 )
 
 
@@ -13,7 +13,7 @@ def run_graph_keyword(time_start, time_end, df_reviews):
     (
         list_keywords_positive_reviews,
         list_keywords_negative_reviews,
-    ) = all_keywords_positive_negative(df_reviews, time_start, time_end)
+    ) = get_keywords_dict(df_reviews, time_start, time_end)
     list_keywords_negative_reviews = sorted(
         list_keywords_negative_reviews.items(), key=lambda x: x[1], reverse=True
     )
@@ -181,3 +181,7 @@ def make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_r
     fig.update_yaxes(title_text="Frequency", tickfont=dict(size=20))
     fig.update_annotations(font_size=10)
     return fig
+
+
+if __name__ == "__main__":
+    pass

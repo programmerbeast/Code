@@ -50,28 +50,6 @@ def get_object(filename):
     return obj
 
 
-def retrieve_app_id(appname):
-    file = path.join("Data", "name_id_map.csv")
-    df = pd.read_csv(file)
-    id = None
-    try:
-        id = df.loc[df["app_name"] == appname]["app_id"].values[0]
-    except:
-        print(f"{appname} not in map.")
-    return id
-
-
-def retrieve_app_id(appname):
-    file = path.join("Data", "name_id_map.csv")
-    df = pd.read_csv(file)
-    id = None
-    try:
-        id = df.loc[df["app_name"] == appname]["app_id"].values[0]
-    except:
-        print(f"{appname} not in map.")
-    return id
-
-
 def order_csv_files(directory, descending=False):
     # get the current directory
 
@@ -123,10 +101,17 @@ def keyword_in_review(keywords, review):
 def first_date_before_second_date(first_date, second_date):
     first_date = datetime.strptime(first_date, "%Y-%m-%d")
     second_date = datetime.strptime(second_date, "%Y-%m-%d")
-
     return first_date <= second_date
-
 
 def get_screen_size():
     width, height = pyautogui.size()
     return (width, height)
+def retrieve_app_id(appname):
+    file = path.join("Data", "name_id_map.csv")
+    df = pd.read_csv(file)
+    id = None
+    try:
+        id = df.loc[df["app_name"] == appname]["app_id"].values[0]
+    except:
+        print(f"{appname} not in map.")
+    return id
