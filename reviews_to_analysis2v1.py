@@ -59,12 +59,13 @@ def sentiment_analysis(review):
 def keywords_positive_negative_time(keywords, df_reviews, time_start, time_end):
     greater_than_zero = pd.DataFrame()
     less_than_zero = pd.DataFrame()
+    is_zero = pd.DataFrame()
     for i in keywords:
         greater_than_zero = pd.concat(
             [
                 greater_than_zero,
                 df_reviews[
-                    (df_reviews["sentiment_polarity"] > 0)
+                    (df_reviews["sentiment_polarity"] >= 0)
                     & (df_reviews["content"].str.contains(i, case=False))
                 ],
             ]
@@ -73,7 +74,16 @@ def keywords_positive_negative_time(keywords, df_reviews, time_start, time_end):
             [
                 less_than_zero,
                 df_reviews[
-                    (df_reviews["sentiment_polarity"] <= 0)
+                    (df_reviews["sentiment_polarity"] < 0)
+                    & (df_reviews["content"].str.contains(i, case=False))
+                ],
+            ]
+        )
+        is_zero = pd.concat(
+            [
+                is_zero,
+                df_reviews[
+                    (df_reviews["sentiment_polarity"] == 0)
                     & (df_reviews["content"].str.contains(i, case=False))
                 ],
             ]
@@ -85,12 +95,16 @@ def keywords_positive_negative_time(keywords, df_reviews, time_start, time_end):
     less_than_zero_counts = (
         less_than_zero.groupby(["days"]).size().rename("num_negative_reviews")
     )
+    is_zero = is_zero.groupby(["days"]).size().rename("num_neutral_reviews")
     result_df = pd.merge(
         greater_than_zero_counts,
         less_than_zero_counts,
         how="outer",
         left_index=True,
         right_index=True,
+    )
+    result_df = pd.merge(
+        result_df, is_zero, how="outer", left_index=True, right_index=True
     )
     result_df.fillna(0, inplace=True)  # Fill NaN values with 0
     result_df.reset_index(inplace=True)
@@ -125,9 +139,11 @@ def keyword_extraction(review):
     return keywords
 
 
-def analyze_reviews(directory):
+def analyze_reviews(app_name):
     folder_path = "saved_dataframes"
     df_saved = pd.DataFrame()
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     # Check if the folder contains any CSV files
     csv_files = [file for file in os.listdir(folder_path) if file.endswith(".csv")]
     if csv_files:
@@ -135,7 +151,6 @@ def analyze_reviews(directory):
     else:
         print("No csv files found")
 
-    app_name = "Twitter"
     directory = "Data/{}".format(app_name)
     arr_files = order_csv_files(directory, descending=False)
     df_reviews = append_df(directory, arr_files)

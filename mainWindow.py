@@ -7,11 +7,15 @@
 
 
 from PySide6 import QtCore, QtGui, QtWidgets
-
 from uiDialog import NewAppDialog, ChangeAppDialog
 from crawler import driverCrawler
 import subprocess
 import threading
+
+import sys
+
+k = -1
+
 
 command = ["python", "app.py"]
 
@@ -20,6 +24,7 @@ class MainWindow(object):
     def __init__(self):
         # List of Dict(appName, appId)
         self.appList = []
+        self.thread = None
 
     def setupUi(self, MainWindow):
         # Ui setup
@@ -162,8 +167,19 @@ class MainWindow(object):
             )  # change the epochs to incerease number of reviews
 
     def onClick_pushButton_displayGraph(self):
-        thread = threading.Thread(target=run_command, args=(command,))
-        thread.start()
+        # Create a new thread and run the command in it
+
+        selected_item = self.listWidget.currentItem()
+        if selected_item is not None:
+            global k
+            k += 1
+            app_name = selected_item.text()
+            
+
+            self.thread = threading.Thread(
+                target=run_command, args=(command, app_name, k)
+            )
+            self.thread.start()
 
     def onClick_pushButton_quit(self):
         sys.exit()
@@ -180,14 +196,13 @@ class MainWindow(object):
         self.updateListWidget()
 
 
-def run_command(command):
-    process = subprocess.Popen(command)
+def run_command(command, arg1, arg2):
+    command2 = command + [arg1] + [str(arg2)]
+    process = subprocess.Popen(command2)
     process.communicate()
 
 
 if __name__ == "__main__":
-    import sys
-
     app = QtWidgets.QApplication(sys.argv)
     mainWindow = QtWidgets.QMainWindow()
     ui = MainWindow()

@@ -1,33 +1,41 @@
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+
+# import dash_core_components as dcc
+# import dash_html_components as html
+from dash import html, dcc
 import plotly.express as px
 import pandas as pd
 from dash.dependencies import Input, Output, State
-from datetime import datetime
 from reviews_to_analysis2v1 import (
     analyze_reviews,
     get_reviews,
     get_reviews_by_keyword,
 )
 from make_graph import run_graph_time, run_graph_keyword
+import sys
+import webbrowser
 
-app_name = "Twitter"
-keywords = ["elon"]
+
+
+external_stylesheets = ["styles.css"]
+app = dash.Dash(__name__, external_stylesheets=[external_stylesheets])
+app_name = sys.argv[1]
+# print(app_name)
+# app_name = "Twitter"
+keywords = [""]
 directory = "Data/{}".format(app_name)
-df_reviews = analyze_reviews(directory)
+df_reviews = analyze_reviews(app_name)
 
-time_start = "2023-04-01"
-time_end = "2023-05-07"
-# Create a Dash app
-app = dash.Dash(__name__)
-
-# Call the display_graph_time function with the selected start and end dates and keyword
-# fig = display_graph_time(end_date_reviews, start_date_reviews, keyword, list_reviews)
-# fig2 = display_graph_keywords(time_start, time_end, list_reviews)
+time_start = df_reviews["days"][0]
+time_end = df_reviews["days"][-1]
+address = "http://127.0.0.1"
+port = str(8050 + int(sys.argv[2]))
+url = address + ":" + port
 
 fig = run_graph_time(time_start, time_end, keywords, df_reviews)
 fig2 = run_graph_keyword(time_start, time_end, df_reviews)
+print("f")
+webbrowser.open(url)
 # Define the layout of the app
 scroll_box_content = []
 scroll_box = html.Div(
@@ -44,67 +52,130 @@ scroll_box = html.Div(
 
 
 app.layout = html.Div(
-    [
+    className="container",
+    children=[
         html.Div(
             [
-                html.H1("Review analysis for app:{}".format(app_name)),
-                html.Hr(),
-                html.H1(
-                    "See the amount of positive and negative reviews associated with a keyword through time"
+                html.Div(
+                    className="sidebar",
+                    id="sidebar",
+                    children=[
+                        html.Button(
+                            id="sidebar-toggle",
+                            n_clicks=0,
+                            # children=html.Span(className="sidebar-toggle-icon"),
+                            children="Sidebar",
+                            style={"background-color": "green"},
+                        ),
+                        html.Div(
+                            className="sidebar-content",
+                            id="sidebar_content",
+                            children=[
+                                # html.H1("Sidebar", className="sidebar-title"),
+                                dcc.Tabs(
+                                    id="sidebar-tabs",
+                                    value="tab-1",
+                                    children=[
+                                        dcc.Tab(label="Twitter", value="tab-1"),
+                                        dcc.Tab(label="Facebook", value="tab-2"),
+                                        dcc.Tab(label="Linkedin", value="tab-3"),
+                                    ],
+                                    style={
+                                        "flex-direction": "column",
+                                        "width": "250px",
+                                        "word-wrap": "break-word",
+                                    },
+                                ),
+                            ],
+                        ),
+                    ],
+                    style={"flex-direction": "column", "display": "none"},
                 ),
-                html.Hr(),
-                dcc.DatePickerRange(
-                    id="date-picker-range",
-                    start_date_placeholder_text="Start Date",
-                    end_date_placeholder_text="End Date",
-                    calendar_orientation="vertical",
-                    display_format="MM/DD/YYYY",
-                ),
-                dcc.Input(
-                    id="keyword-input",
-                    placeholder="Enter Keyword",
-                    type="text",
-                    value="",
-                ),
-                html.Button("Update", id="button"),
-                dcc.Graph(
-                    id="output-graph",
-                    figure=fig,
+                html.Div(
                     style={
-                        "width": "1500px",
-                        "height": "800px",
-                        "backgroundColor": "#F2F2F2",
-                    },
-                    config={"responsive": True},
+                        "borderLeft": "1px solid black",
+                        "height": "500px",
+                        "margin": "0 10px",
+                        "display": "none",
+                        "verticalAlign": "middle",
+                    }
                 ),
-            ]
+                html.Div(
+                    className="div1",
+                    children=[
+                        html.Div(
+                            [
+                                #  html.H1("Review analysis for app:{}".format(app_name)),
+                                # html.Hr(),
+                                # html.H1(
+                                #     "See the amount of positive and negative reviews associated with a keyword through time"
+                                # ),
+                                # html.Hr(),
+                                dcc.DatePickerRange(
+                                    id="date-picker-range",
+                                    start_date_placeholder_text="Start Date",
+                                    end_date_placeholder_text="End Date",
+                                    calendar_orientation="vertical",
+                                    display_format="MM/DD/YYYY",
+                                ),
+                                dcc.Input(
+                                    id="keyword-input",
+                                    placeholder="Enter Keyword",
+                                    type="text",
+                                    value="",
+                                ),
+                                html.Button("Update", id="button"),
+                            ],
+                            style={"width": "100%"},
+                        ),
+                        dcc.Graph(
+                            id="output-graph",
+                            figure=fig,
+                            style={
+                                "flex": "1",
+                                "height": "800px",
+                                "backgroundColor": "#F2F2F2",
+                            },
+                            config={"responsive": True},
+                        ),
+                    ],
+                    # style={"flex": "1"},
+                ),
+                html.Div(
+                    className="div2",
+                    children=[
+                        html.Div(
+                            [
+                                dcc.DatePickerRange(
+                                    id="date-picker-range2",
+                                    start_date_placeholder_text="Start Date",
+                                    end_date_placeholder_text="End Date",
+                                    calendar_orientation="vertical",
+                                    display_format="MM/DD/YYYY",
+                                ),
+                                html.Button("Update", id="button2"),
+                            ],
+                            # style={"width": "100%"},
+                        ),
+                        dcc.Graph(
+                            id="output-graph2",
+                            figure=fig2,
+                            style={
+                                # "flex": "1",
+                                "backgroundColor": "#F2F2F2",
+                                # "margin-bottom": "50px",
+                            },
+                        ),
+                    ],
+                    # style={"flex": "1"},
+                ),
+            ],
+            style={"display": "flex", "gap": "0px"},
         ),
         html.Div(
-            [
-                html.H1(
-                    "See the keywords most often associated with positive and/or negative reviews",
-                    style={"margin-top": "200px"},
-                ),
-                html.Hr(),
-                dcc.DatePickerRange(
-                    id="date-picker-range2",
-                    start_date_placeholder_text="Start Date",
-                    end_date_placeholder_text="End Date",
-                    calendar_orientation="vertical",
-                    display_format="MM/DD/YYYY",
-                    #  style={'margin-top': '125px'}
-                ),
-                html.Button("Update", id="button2"),
-                dcc.Graph(
-                    id="output-graph2",
-                    figure=fig2,
-                    style={"backgroundColor": "#F2F2F2"},
-                ),
-            ]
-        ),
-        html.Div(
-            [
-                html.H1("Search for reviews by keyword and date"),
+            className="div3",
+            children=[
+                html.H3("Search for reviews"),
                 dcc.DatePickerRange(
                     id="date-picker-range3",
                     start_date_placeholder_text="Start Date",
@@ -132,7 +203,7 @@ app.layout = html.Div(
             ]
         ),
     ],
-    style={"backgroundColor": "#F2F2F2"},
+    # style={"backgroundColor": "#F2F2F2", "gap": "20px"},
 )
 
 
@@ -147,14 +218,11 @@ app.layout = html.Div(
     ],
 )
 def update_graph(n_clicks, start_date, end_date, keyword):
-    # print("start_date", start_date)
-    # print("end_date", end_date)
     if start_date is None or end_date is None:
-        print("start_date or end_date is None")
+    
         return dash.no_update
     if n_clicks is not None:
         keywords = keyword.split(",")
-        # Call the display_graph_time function with the selected start and end dates and keyword
         fig = run_graph_time(start_date, end_date, keywords, df_reviews)
         return fig
     else:
@@ -172,7 +240,6 @@ def update_graph(n_clicks, start_date, end_date, keyword):
 def update_graph2(n_clicks, start_date, end_date):
     # Call the display_graph_time function with the selected start and end dates and keyword
     if start_date is None or end_date is None:
-        print("start_date or end_date is None")
         return dash.no_update
     if n_clicks is not None:
         # Call the display_graph_time function with the selected start and end dates and keyword
@@ -196,7 +263,6 @@ def update_scroll_box(
     n_clicks, start_date, end_date, keyword, n1_clicks, n2_clicks, value
 ):
     if start_date is None or end_date is None:
-        print("start_date or end_date is None")
         return dash.no_update
     if n_clicks is not None or n1_clicks is not None or n2_clicks is not None:
         scroll_box_content = []
@@ -242,5 +308,21 @@ def update_scroll_box(
 
 # Run the app
 
+
+@app.callback(
+    Output("sidebar_content", "style"),
+    Input("sidebar-toggle", "n_clicks"),
+)
+def toggle_sidebar(n_clicks):
+    if n_clicks % 2 == 1:
+        return {"display": "none"}
+    else:
+        return {"display": "block"}
+
+
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    address = "127.0.0.1"
+    port = str(8050 + int(sys.argv[2]))
+
+    app.run_server(debug=True, host=address, port=port)
+    

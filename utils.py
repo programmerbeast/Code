@@ -1,5 +1,6 @@
 import pickle
 import os
+import pyautogui
 from os import path
 import pandas as pd
 from datetime import datetime
@@ -100,9 +101,11 @@ def keyword_in_review(keywords, review):
 def first_date_before_second_date(first_date, second_date):
     first_date = datetime.strptime(first_date, "%Y-%m-%d")
     second_date = datetime.strptime(second_date, "%Y-%m-%d")
-
     return first_date <= second_date
 
+def get_screen_size():
+    width, height = pyautogui.size()
+    return (width, height)
 def retrieve_app_id(appname):
     file = path.join("Data", "name_id_map.csv")
     df = pd.read_csv(file)
