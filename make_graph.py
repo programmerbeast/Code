@@ -31,11 +31,9 @@ def run_graph_time(time_start, time_end, keywords, df_reviews):
 
 def make_graph_time(time_start, time_end, keywords, df_reviews):
     width_screen, height_screen = get_screen_size()
-    # print(width_screen,height_screen)
     keyword_time = keywords_positive_negative_time(
         keywords, df_reviews, time_start, time_end
     )
-    # print(keyword_time)
     data_positive = keyword_time["positive_reviews"]
     data_negative = keyword_time["negative_reviews"]
     data_neutral = keyword_time["neutral_reviews"]
@@ -50,7 +48,6 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
             mode="lines",
             name="negative review",
             line=dict(color="red"),
-            # legend=dict(font=dict(size=10)),
         )
     )
     fig.add_trace(
@@ -60,7 +57,6 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
             mode="lines",
             name="positive review",
             line=dict(color="blue"),
-            # legend=dict(font=dict(size=10)),
         )
     )
     fig.add_trace(
@@ -93,7 +89,6 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
     )
     fig.update_yaxes(title_text="Frequency", tickfont=dict(size=20))
     fig.update_annotations(font_size=10)
-    # fig.show()
     return fig
 
 

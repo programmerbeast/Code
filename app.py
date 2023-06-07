@@ -6,7 +6,6 @@ from dash import html, dcc
 import plotly.express as px
 import pandas as pd
 from dash.dependencies import Input, Output, State
-from datetime import datetime
 from reviews_to_analysis2v1 import (
     analyze_reviews,
     get_reviews,
@@ -15,7 +14,7 @@ from reviews_to_analysis2v1 import (
 from make_graph import run_graph_time, run_graph_keyword
 import sys
 import webbrowser
-from selenium import webdriver
+
 
 
 external_stylesheets = ["styles.css"]
@@ -32,9 +31,11 @@ time_end = df_reviews["days"][-1]
 address = "http://127.0.0.1"
 port = str(8050 + int(sys.argv[2]))
 url = address + ":" + port
-webbrowser.open(url)
+
 fig = run_graph_time(time_start, time_end, keywords, df_reviews)
 fig2 = run_graph_keyword(time_start, time_end, df_reviews)
+print("f")
+webbrowser.open(url)
 # Define the layout of the app
 scroll_box_content = []
 scroll_box = html.Div(
@@ -217,14 +218,11 @@ app.layout = html.Div(
     ],
 )
 def update_graph(n_clicks, start_date, end_date, keyword):
-    # print("start_date", start_date)
-    # print("end_date", end_date)
     if start_date is None or end_date is None:
-        # print("start_date or end_date is None")
+    
         return dash.no_update
     if n_clicks is not None:
         keywords = keyword.split(",")
-        # Call the display_graph_time function with the selected start and end dates and keyword
         fig = run_graph_time(start_date, end_date, keywords, df_reviews)
         return fig
     else:
@@ -242,7 +240,6 @@ def update_graph(n_clicks, start_date, end_date, keyword):
 def update_graph2(n_clicks, start_date, end_date):
     # Call the display_graph_time function with the selected start and end dates and keyword
     if start_date is None or end_date is None:
-        # print("start_date or end_date is None")
         return dash.no_update
     if n_clicks is not None:
         # Call the display_graph_time function with the selected start and end dates and keyword
@@ -266,7 +263,6 @@ def update_scroll_box(
     n_clicks, start_date, end_date, keyword, n1_clicks, n2_clicks, value
 ):
     if start_date is None or end_date is None:
-        #  print("start_date or end_date is None")
         return dash.no_update
     if n_clicks is not None or n1_clicks is not None or n2_clicks is not None:
         scroll_box_content = []
@@ -329,3 +325,4 @@ if __name__ == "__main__":
     port = str(8050 + int(sys.argv[2]))
 
     app.run_server(debug=True, host=address, port=port)
+    
