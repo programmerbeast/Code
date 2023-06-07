@@ -33,8 +33,8 @@ def make_graph(time_start, time_end, keywords, df_reviews):
     keyword_time = keywords_positive_negative_time(
         keywords, df_reviews, time_start, time_end
     )
-    data_positive = keyword_time["positive_reviews"]
-    data_negative = keyword_time["negative_reviews"]
+    data_positive = keyword_time["num_positive_reviews"]
+    data_negative = keyword_time["num_negative_reviews"]
     dates = keyword_time["days"]
 
     x = pd.date_range(time_start, time_end, freq="d")
@@ -88,10 +88,10 @@ def make_graph(time_start, time_end, keywords, df_reviews):
 
 
 def make_graph_keywords(dict_keywords_count_negetive, dict_keywords_count_positive):
-    keyword_negative = dict_keywords_count_negetive[:50][0]
-    keyword_positive = dict_keywords_count_positive[:50][0]
-    freq_negative = dict_keywords_count_negetive[:50][1]
-    freq_positive = dict_keywords_count_positive[:50][1]
+    keyword_negative = [dict_keywords_count_negetive[i][0] for i in range(50)]
+    keyword_positive = [dict_keywords_count_positive[i][0] for i in range(50)]
+    freq_negative = [dict_keywords_count_negetive[i][1] for i in range(50)]
+    freq_positive = [dict_keywords_count_positive[i][1] for i in range(50)]
 
     fig = make_subplots(
         rows=2,

@@ -19,16 +19,6 @@ df_reviews = analyze_reviews(directory)
 
 time_start = "2023-04-01"
 time_end = "2023-05-07"
-# list_reviews = reviews_to_analysis(time_start, time_end, directory)
-# start_date_reviews = list_reviews[0][1]
-# end_date_reviews = list_reviews[len(list_reviews) - 1][1]
-# start_date_reviews = "{}/{}/{}".format(
-#   start_date_reviews[1], start_date_reviews[2], start_date_reviews[0]
-# )
-# end_date_reviews = "{}/{}/{}".format(
-#    end_date_reviews[1], end_date_reviews[2], end_date_reviews[0]
-# )
-# print("this too")
 # Create a Dash app
 app = dash.Dash(__name__)
 
