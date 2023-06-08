@@ -54,6 +54,7 @@ def crawler(
                     continuation_token=continuation_token,
                 )
                 final_result += result
+                print(f"Found reviews till {result[-1]['at']}")
                 if result[-1]["at"] < start_date:
                     print("Stopping")
                     stop = True

@@ -7,7 +7,7 @@
 
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from uiDialog import NewAppDialog, ChangeAppDialog
+from uiDialog import NewAppDialog, ChangeAppDialog, RunCrawlerDialog
 from crawler import driverCrawler
 import subprocess
 import threading
@@ -159,22 +159,24 @@ class MainWindow(object):
         self.updateListWidget()
 
     def onClick_pushButton_runCrawler(self):
-        for element in self.appList:
-            appName = element["appName"]
-            appId = element["appId"]
-            driverCrawler(
-                appName, appId, epochs=100
-            )  # change the epochs to incerease number of reviews
+        selected_item = self.listWidget.currentItem()
+        if selected_item is not None:
+            appName = selected_item.text()
+            for element in self.appList:
+                if element["appName"] == appName:
+                    appId = element["appId"]
+            dialog_newApp = QtWidgets.QDialog()
+            obj_runCrawler = RunCrawlerDialog(appName, appId)
+            obj_runCrawler.setupUi(dialog_newApp)
+            dialog_newApp.exec()
 
     def onClick_pushButton_displayGraph(self):
-        # Create a new thread and run the command in it
-
+        # Create a new thread and display graph
         selected_item = self.listWidget.currentItem()
         if selected_item is not None:
             global k
             k += 1
             app_name = selected_item.text()
-            
 
             self.thread = threading.Thread(
                 target=run_command, args=(command, app_name, k)
