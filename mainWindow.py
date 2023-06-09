@@ -10,14 +10,13 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from uiDialog import NewAppDialog, ChangeAppDialog
 from crawler import driverCrawler
 import subprocess
-import threading
-
 import sys
-
+import requests
 k = -1
-
-
+stop_flag=False
+shutdown=False
 command = ["python", "app.py"]
+
 
 
 class MainWindow(object):
@@ -25,13 +24,18 @@ class MainWindow(object):
         # List of Dict(appName, appId)
         self.appList = []
         self.thread = None
+        self.processes = []
 
+
+
+        
     def setupUi(self, MainWindow):
         # Ui setup
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(640, 480)
         MainWindow.setMinimumSize(QtCore.QSize(640, 480))
         MainWindow.setMaximumSize(QtCore.QSize(640, 480))
+        MainWindow.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowMinimizeButtonHint)
 
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -133,6 +137,8 @@ class MainWindow(object):
         self.retranslateUi(MainWindow)
         self.listWidget.setCurrentRow(-1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+    
+    
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -145,6 +151,7 @@ class MainWindow(object):
         self.label_footer.setText(
             _translate("MainWindow", "A property of Chaos, Badr and Mohommad.")
         )
+    
 
     def updateListWidget(self):
         self.listWidget.clear()
@@ -176,12 +183,32 @@ class MainWindow(object):
             app_name = selected_item.text()
             
 
-            self.thread = threading.Thread(
-                target=run_command, args=(command, app_name, k)
-            )
-            self.thread.start()
+            #$thread = threading.Thread(
+            #    target=run_command, args=(command, app_name, k)
+            #)
+            self.run_command(command,app_name,k)
+    def quit_application(self):
+        # Terminate the processes
+        for q,p in enumerate(self.processes):
+            dash_app_address= f"http://127.0.0.1:{str(8050+q)}"
+            response = requests.get(f'{dash_app_address}/shutdown')
+            if response.status_code == 200:
+                print('Dash app stopped successfully.')
+            else:
+                print('Either failed or stopped succesfully in the instance before.')
+        for p in self.processes:
+         p.terminate()
+
+    # Wait for the processes to finish
+        for p in self.processes:
+            p.wait()
+
+
+        QtWidgets.QApplication.quit()
+            
 
     def onClick_pushButton_quit(self):
+        self.quit_application()
         sys.exit()
 
     def onActivation_listWidget(self, item):
@@ -195,11 +222,14 @@ class MainWindow(object):
         dialog_listEditDelete.exec()
         self.updateListWidget()
 
+    
 
-def run_command(command, arg1, arg2):
-    command2 = command + [arg1] + [str(arg2)]
-    process = subprocess.Popen(command2)
-    process.communicate()
+
+    def run_command(self, command, arg1, arg2):
+        command2 = command + [arg1] + [str(arg2)]
+        process = subprocess.Popen(command2)
+        self.processes.append(process)
+
 
 
 if __name__ == "__main__":

@@ -2,23 +2,22 @@ import dash
 
 # import dash_core_components as dcc
 # import dash_html_components as html
+import time
+import flask
 from dash import html, dcc
-import plotly.express as px
-import pandas as pd
+
 from dash.dependencies import Input, Output, State
 from reviews_to_analysis2v1 import (
     analyze_reviews,
     get_reviews,
     get_reviews_by_keyword,
 )
-from make_graph import run_graph_time, run_graph_keyword
+from make_graph import run_graph_time, run_graph_keyword,run_positive_negative_neutral_percentage
 import sys
 import webbrowser
-
-
-
 external_stylesheets = ["styles.css"]
 app = dash.Dash(__name__, external_stylesheets=[external_stylesheets])
+server=app.server
 app_name = sys.argv[1]
 # print(app_name)
 # app_name = "Twitter"
@@ -34,8 +33,8 @@ url = address + ":" + port
 
 fig = run_graph_time(time_start, time_end, keywords, df_reviews)
 fig2 = run_graph_keyword(time_start, time_end, df_reviews)
-print("f")
-webbrowser.open(url)
+fig3=run_positive_negative_neutral_percentage(df_reviews)
+
 # Define the layout of the app
 scroll_box_content = []
 scroll_box = html.Div(
@@ -54,6 +53,7 @@ scroll_box = html.Div(
 app.layout = html.Div(
     className="container",
     children=[
+        html.P(f"Review analysis for:{app_name}, Between start_date:{time_start} and end_date:{time_end}" ),
         html.Div(
             [
                 html.Div(
@@ -135,6 +135,7 @@ app.layout = html.Div(
                                 "flex": "1",
                                 "height": "800px",
                                 "backgroundColor": "#F2F2F2",
+                                "max-width": "100vw",
                             },
                             config={"responsive": True},
                         ),
@@ -163,6 +164,7 @@ app.layout = html.Div(
                             style={
                                 # "flex": "1",
                                 "backgroundColor": "#F2F2F2",
+                                "max-width": "50vw",
                                 # "margin-bottom": "50px",
                             },
                         ),
@@ -170,8 +172,10 @@ app.layout = html.Div(
                     # style={"flex": "1"},
                 ),
             ],
-            style={"display": "flex", "gap": "0px"},
+            style={"display": "flex", "gap": "0px", "max-width": "100vw"},
         ),
+        html.Div(className="container_2",
+                 children=[
         html.Div(
             className="div3",
             children=[
@@ -202,6 +206,13 @@ app.layout = html.Div(
                 html.Hr(style={"margin-top": "400px"}),
             ]
         ),
+        html.Div([
+    dcc.Graph(
+        id='pie-chart',
+        figure=fig3
+    )
+])
+                 ],style={"display": "flex", "gap": "0px"},),
     ],
     # style={"backgroundColor": "#F2F2F2", "gap": "20px"},
 )
@@ -281,7 +292,7 @@ def update_scroll_box(
             ]
         elif n1_clicks is not None and n2_clicks is None:
             df_reviews_by_keyword = df_reviews_by_keyword[
-                df_reviews_by_keyword["sentiment_polarity"] <= 0
+                df_reviews_by_keyword["sentiment_polarity"] < 0
             ]
         if value is not None:
             df_reviews_by_keyword = get_reviews_by_keyword(value, df_reviews_by_keyword)
@@ -320,9 +331,27 @@ def toggle_sidebar(n_clicks):
         return {"display": "block"}
 
 
-if __name__ == "__main__":
-    address = "127.0.0.1"
-    port = str(8050 + int(sys.argv[2]))
 
-    app.run_server(debug=True, host=address, port=port)
+def delayed_open(url):
+    time.sleep(3)
+    print(url)
+    webbrowser.open(url)
+
+@server.route('/shutdown', methods=['GET'])
+def shutdown():
+    func = flask.request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug server')
+    func()
+    return 'Server shutting down...'
+
+
+
+address = "127.0.0.1"
+port = str(8050 + int(sys.argv[2]))
+url = "http://" + address + ":" + port
+
+delayed_open(url)
+app.run_server(debug=True, host=address, port=port,use_reloader=False)
+
     
