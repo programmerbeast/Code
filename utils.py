@@ -103,9 +103,12 @@ def first_date_before_second_date(first_date, second_date):
     second_date = datetime.strptime(second_date, "%Y-%m-%d")
     return first_date <= second_date
 
+
 def get_screen_size():
     width, height = pyautogui.size()
     return (width, height)
+
+
 def retrieve_app_id(appname):
     file = path.join("Data", "name_id_map.csv")
     df = pd.read_csv(file)

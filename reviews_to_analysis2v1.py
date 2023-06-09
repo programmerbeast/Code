@@ -1,8 +1,6 @@
-from math import nan
 import os
 from textblob import TextBlob
 import pandas as pd
-from autocorrect import Speller
 import nltk
 from utils import (
     order_csv_files,
@@ -14,7 +12,6 @@ from cleantext import clean
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import wordnet
 
-spell = Speller(lang='en')
 
 def get_synonyms(words):
     all_synonyms = []
@@ -53,7 +50,6 @@ def get_reviews_by_keyword(keywords, df_reviews):
         df_reviews["keywords"].apply(lambda x: synonym_related(x, list_synonyms))
     ]
     return df_containing_keywords
-
 
 
 def sentiment_analysis(review):
@@ -111,7 +107,7 @@ def keywords_positive_negative_time(keywords, df_reviews, time_start, time_end):
     result_df = pd.merge(
         result_df, is_zero, how="outer", left_index=True, right_index=True
     )
-    result_df.fillna(0, inplace=True)  # Fill NaN values with 0   
+    result_df.fillna(0, inplace=True)  # Fill NaN values with 0
     result_df.reset_index(inplace=True)
     result_df = result_df[
         result_df["days"].apply(lambda x: first_date_before_second_date(time_start, x))
@@ -143,19 +139,19 @@ def keyword_extraction(review):
 
     return keywords
 
+
 def analyze_dataframe(df_reviews):
     df_reviews = df_reviews.sort_index()
-    # for the keyword fully
+
     df_reviews["days"] = df_reviews["at"].transform(lambda x: x.split(" ")[0])
     df_reviews = df_reviews.set_index(df_reviews["at"].rename("index"))
 
     df_reviews["content"] = df_reviews["content"].transform(
         lambda x: clean(x, no_emoji=True)
     )
-  
+
     df_reviews.dropna(subset=["content"], inplace=True)
-    #this code is for later, when more computing power available, it autocorrects wrong spelled words
-   # df_reviews["content"]=df_reviews["content"].apply(lambda x: autospell(x))
+
     df_reviews = df_reviews.sort_index()
 
     df_reviews["sentiment_polarity"] = df_reviews["content"].transform(
@@ -171,12 +167,13 @@ def analyze_dataframe(df_reviews):
     )
     return df_reviews
 
+
 def analyze_reviews(app_name):
     folder_path = "saved_dataframes"
     df_saved = pd.DataFrame()
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
-    # Check if the folder contains any CSV files
+
     csv_files = [file for file in os.listdir(folder_path) if file.endswith(".csv")]
     if csv_files:
         df_saved = append_df(folder_path, csv_files)
@@ -197,21 +194,18 @@ def analyze_reviews(app_name):
         else:
             df_reviews = analyze_dataframe(df_reviews)
             df_reviews = df_reviews.sort_index()
-    else: 
+    else:
         df_reviews = analyze_dataframe(df_reviews)
         df_reviews = df_reviews.sort_index()
-     
-       
-    file_name= str(df_reviews["days"][0]) + ":" + str(df_reviews["days"][-1])
-    df_reviews.to_csv(os.path.join(folder_path,file_name))
+
+    file_name = str(df_reviews["days"][0]) + ":" + str(df_reviews["days"][-1])
+    df_reviews.to_csv(os.path.join(folder_path, file_name))
     return df_reviews
+
 
 def autospell(text):
     corrected_sentence = [spell(w) for w in (nltk.word_tokenize(text))]
-    return " ".join(corrected_sentence) 
-
-
-
+    return " ".join(corrected_sentence)
 
 
 def get_reviews(df_reviews, keywords, time_start, time_end):
@@ -249,13 +243,22 @@ def get_keywords_dict(df_reviews, time_start, time_end):
                     neutral_keywords_dict[j] += 1
                 else:
                     neutral_keywords_dict[j] = 1
-                
 
-    return (positive_keywords_dict, negative_keywords_dict,neutral_keywords_dict)
+    return (positive_keywords_dict, negative_keywords_dict, neutral_keywords_dict)
 
 
 def get_positive_negative_neutral_percentage(df_reviews):
-    negative_percentage=len(df_reviews[df_reviews["sentiment_polarity"]<0])/len(df_reviews)
-    neutral_percentage=len(df_reviews[df_reviews["sentiment_polarity"]==0])/len(df_reviews)
-    positive_percentage=len(df_reviews[df_reviews["sentiment_polarity"]>0])/len(df_reviews)
-    return (positive_percentage*100,negative_percentage*100,neutral_percentage*100)
+    negative_percentage = len(df_reviews[df_reviews["sentiment_polarity"] < 0]) / len(
+        df_reviews
+    )
+    neutral_percentage = len(df_reviews[df_reviews["sentiment_polarity"] == 0]) / len(
+        df_reviews
+    )
+    positive_percentage = len(df_reviews[df_reviews["sentiment_polarity"] > 0]) / len(
+        df_reviews
+    )
+    return (
+        positive_percentage * 100,
+        negative_percentage * 100,
+        neutral_percentage * 100,
+    )

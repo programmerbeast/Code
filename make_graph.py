@@ -1,12 +1,11 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import plotly.offline as pyo
 from utils import get_screen_size
 from reviews_to_analysis2v1 import (
     keywords_positive_negative_time,
     get_keywords_dict,
-    get_positive_negative_neutral_percentage
+    get_positive_negative_neutral_percentage,
 )
 
 
@@ -26,23 +25,38 @@ def run_graph_keyword(time_start, time_end, df_reviews):
         list_keywords_neutral_reviews.items(), key=lambda x: x[1], reverse=True
     )
     return make_graph_keywords(
-        list_keywords_negative_reviews, list_keywords_positive_reviews, list_keywords_neutral_reviews
+        list_keywords_negative_reviews,
+        list_keywords_positive_reviews,
+        list_keywords_neutral_reviews,
     )
 
 
 def run_graph_time(time_start, time_end, keywords, df_reviews):
     return make_graph_time(time_start, time_end, keywords, df_reviews)
-def run_positive_negative_neutral_percentage(df_reviews):
-    (positive_percentage,negative_percentage,neutral_percentage)=get_positive_negative_neutral_percentage(df_reviews)
-    labels = ['Positive', 'Negative',"Neutral"]
-    values = [positive_percentage,negative_percentage,neutral_percentage]
 
-# Create the pie plot
-    fig = go.Figure(data=[go.Pie(labels=labels, values=values, marker=dict(colors=['blue', 'red',"yellow"]))])
+
+def run_positive_negative_neutral_percentage(df_reviews):
+    (
+        positive_percentage,
+        negative_percentage,
+        neutral_percentage,
+    ) = get_positive_negative_neutral_percentage(df_reviews)
+    labels = ["Positive", "Negative", "Neutral"]
+    values = [positive_percentage, negative_percentage, neutral_percentage]
+
+    # Create the pie plot
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=labels,
+                values=values,
+                marker=dict(colors=["blue", "red", "yellow"]),
+            )
+        ]
+    )
     fig.update_layout(title="Distribution of all reviews")
     fig.update_layout(width=500, height=500)
     return fig
-
 
 
 def make_graph_time(time_start, time_end, keywords, df_reviews):
@@ -90,7 +104,7 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
         title=f"Positive, Negative and Neutral reviews with the keyword {keywords}",
         xaxis_title="Date",
         yaxis_title="Number of Reviews",
-        width=int(width_screen *(0.6)),
+        width=int(width_screen * (0.6)),
         height=int(height_screen / 1.3),
         xaxis=dict(rangeslider=dict(visible=True, thickness=0.05), type="date"),
         legend=dict(title="", font=dict(size=10)),
@@ -108,7 +122,11 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
     return fig
 
 
-def make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_reviews,list_keywords_neutral_reviews):
+def make_graph_keywords(
+    list_keywords_negative_reviews,
+    list_keywords_positive_reviews,
+    list_keywords_neutral_reviews,
+):
     width_screen, height_screen = get_screen_size()
 
     keyword_negative = [list_keywords_negative_reviews[i][0] for i in range(50)]
@@ -155,8 +173,8 @@ def make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_r
         plot_bgcolor="rgba(33,67,156, 0.8)",
         legend=dict(font=dict(size=10)),  # specify the font size for the legend
         barmode="group",
-        width=int(width_screen *(0.4)),
-        height=int(height_screen/1.2),
+        width=int(width_screen * (0.4)),
+        height=int(height_screen / 1.2),
         xaxis=dict(
             type="category",
             range=[0, 5],  # set the initial range of bars to display
@@ -224,5 +242,3 @@ def make_graph_keywords(list_keywords_negative_reviews, list_keywords_positive_r
     fig.update_yaxes(title_text="Frequency", tickfont=dict(size=20))
     fig.update_annotations(font_size=10)
     return fig
-
-

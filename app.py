@@ -1,7 +1,4 @@
 import dash
-
-# import dash_core_components as dcc
-# import dash_html_components as html
 import time
 import flask
 from dash import html, dcc
@@ -12,15 +9,18 @@ from reviews_to_analysis2v1 import (
     get_reviews,
     get_reviews_by_keyword,
 )
-from make_graph import run_graph_time, run_graph_keyword,run_positive_negative_neutral_percentage
+from make_graph import (
+    run_graph_time,
+    run_graph_keyword,
+    run_positive_negative_neutral_percentage,
+)
 import sys
 import webbrowser
+
 external_stylesheets = ["styles.css"]
 app = dash.Dash(__name__, external_stylesheets=[external_stylesheets])
-server=app.server
+server = app.server
 app_name = sys.argv[1]
-# print(app_name)
-# app_name = "Twitter"
 keywords = [""]
 directory = "Data/{}".format(app_name)
 df_reviews = analyze_reviews(app_name)
@@ -33,7 +33,7 @@ url = address + ":" + port
 
 fig = run_graph_time(time_start, time_end, keywords, df_reviews)
 fig2 = run_graph_keyword(time_start, time_end, df_reviews)
-fig3=run_positive_negative_neutral_percentage(df_reviews)
+fig3 = run_positive_negative_neutral_percentage(df_reviews)
 
 # Define the layout of the app
 scroll_box_content = []
@@ -53,7 +53,9 @@ scroll_box = html.Div(
 app.layout = html.Div(
     className="container",
     children=[
-        html.P(f"Review analysis for:{app_name}, Between start_date:{time_start} and end_date:{time_end}" ),
+        html.P(
+            f"Review analysis for:{app_name}, Between start_date:{time_start} and end_date:{time_end}"
+        ),
         html.Div(
             [
                 html.Div(
@@ -63,7 +65,6 @@ app.layout = html.Div(
                         html.Button(
                             id="sidebar-toggle",
                             n_clicks=0,
-                            # children=html.Span(className="sidebar-toggle-icon"),
                             children="Sidebar",
                             style={"background-color": "green"},
                         ),
@@ -71,7 +72,6 @@ app.layout = html.Div(
                             className="sidebar-content",
                             id="sidebar_content",
                             children=[
-                                # html.H1("Sidebar", className="sidebar-title"),
                                 dcc.Tabs(
                                     id="sidebar-tabs",
                                     value="tab-1",
@@ -105,12 +105,6 @@ app.layout = html.Div(
                     children=[
                         html.Div(
                             [
-                                #  html.H1("Review analysis for app:{}".format(app_name)),
-                                # html.Hr(),
-                                # html.H1(
-                                #     "See the amount of positive and negative reviews associated with a keyword through time"
-                                # ),
-                                # html.Hr(),
                                 dcc.DatePickerRange(
                                     id="date-picker-range",
                                     start_date_placeholder_text="Start Date",
@@ -156,65 +150,60 @@ app.layout = html.Div(
                                 ),
                                 html.Button("Update", id="button2"),
                             ],
-                            # style={"width": "100%"},
                         ),
                         dcc.Graph(
                             id="output-graph2",
                             figure=fig2,
                             style={
-                                # "flex": "1",
                                 "backgroundColor": "#F2F2F2",
                                 "max-width": "50vw",
-                                # "margin-bottom": "50px",
                             },
                         ),
                     ],
-                    # style={"flex": "1"},
                 ),
             ],
             style={"display": "flex", "gap": "0px", "max-width": "100vw"},
         ),
-        html.Div(className="container_2",
-                 children=[
         html.Div(
-            className="div3",
+            className="container_2",
             children=[
-                html.H3("Search for reviews"),
-                dcc.DatePickerRange(
-                    id="date-picker-range3",
-                    start_date_placeholder_text="Start Date",
-                    end_date_placeholder_text="End Date",
-                    calendar_orientation="vertical",
-                    display_format="MM/DD/YYYY",
+                html.Div(
+                    className="div3",
+                    children=[
+                        html.H3("Search for reviews"),
+                        dcc.DatePickerRange(
+                            id="date-picker-range3",
+                            start_date_placeholder_text="Start Date",
+                            end_date_placeholder_text="End Date",
+                            calendar_orientation="vertical",
+                            display_format="MM/DD/YYYY",
+                        ),
+                        dcc.Input(
+                            id="keyword-input2",
+                            placeholder="Enter Keyword",
+                            type="text",
+                            value="",
+                        ),
+                        html.Button(
+                            "See Negative Reviews", id="button4", className="my-button"
+                        ),
+                        html.Button(
+                            "See positive reviews", id="button5", className="my-button"
+                        ),
+                        dcc.Input(
+                            id="input-text", type="text", placeholder="See by topic"
+                        ),
+                        html.Button("Update", id="button3"),
+                        html.Div(id="output-div"),
+                        scroll_box,
+                        html.Hr(style={"margin-top": "400px"}),
+                    ],
                 ),
-                dcc.Input(
-                    id="keyword-input2",
-                    placeholder="Enter Keyword",
-                    type="text",
-                    value="",
-                ),
-                html.Button(
-                    "See Negative Reviews", id="button4", className="my-button"
-                ),
-                html.Button(
-                    "See positive reviews", id="button5", className="my-button"
-                ),
-                dcc.Input(id="input-text", type="text", placeholder="See by topic"),
-                html.Button("Update", id="button3"),
-                html.Div(id="output-div"),
-                scroll_box,
-                html.Hr(style={"margin-top": "400px"}),
-            ]
+                html.Div([dcc.Graph(id="pie-chart", figure=fig3)]),
+            ],
+            style={"display": "flex", "gap": "0px"},
         ),
-        html.Div([
-    dcc.Graph(
-        id='pie-chart',
-        figure=fig3
-    )
-])
-                 ],style={"display": "flex", "gap": "0px"},),
     ],
-    # style={"backgroundColor": "#F2F2F2", "gap": "20px"},
 )
 
 
@@ -230,7 +219,6 @@ app.layout = html.Div(
 )
 def update_graph(n_clicks, start_date, end_date, keyword):
     if start_date is None or end_date is None:
-    
         return dash.no_update
     if n_clicks is not None:
         keywords = keyword.split(",")
@@ -331,20 +319,19 @@ def toggle_sidebar(n_clicks):
         return {"display": "block"}
 
 
-
 def delayed_open(url):
     time.sleep(3)
     print(url)
     webbrowser.open(url)
 
-@server.route('/shutdown', methods=['GET'])
-def shutdown():
-    func = flask.request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug server')
-    func()
-    return 'Server shutting down...'
 
+@server.route("/shutdown", methods=["GET"])
+def shutdown():
+    func = flask.request.environ.get("werkzeug.server.shutdown")
+    if func is None:
+        raise RuntimeError("Not running with the Werkzeug server")
+    func()
+    return "Server shutting down..."
 
 
 address = "127.0.0.1"
@@ -352,6 +339,4 @@ port = str(8050 + int(sys.argv[2]))
 url = "http://" + address + ":" + port
 
 delayed_open(url)
-app.run_server(debug=True, host=address, port=port,use_reloader=False)
-
-    
+app.run_server(debug=True, host=address, port=port, use_reloader=False)
