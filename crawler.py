@@ -81,7 +81,10 @@ def crawler(
 # 2: When you provide a start_date, it will fetch all reviews till that date.
 def driverCrawler(app_name, app_id, epochs=10, start_date=None, batch_size=100):
     print(f"Running Crawler for {app_name} with id {app_id}")
-    subdirs = listdir("Data")
+    try:
+        subdirs = listdir("Data")
+    except:
+        mkdir("Data/")
     final_path = path.join("Data", app_name)
     if app_name in subdirs:
         continuation_token = utils.get_object(

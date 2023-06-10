@@ -11,7 +11,7 @@ from uiDialog import NewAppDialog, ChangeAppDialog, RunCrawlerDialog
 import subprocess
 import sys
 import requests
-from os import mkdir
+from os import mkdir, path
 import utils
 
 k = -1
@@ -23,12 +23,15 @@ command = ["python", "app.py"]
 class MainWindow(object):
     def __init__(self):
         # List of Dict(appName, appId)
-        try:
-            self.appList = utils.get_object("Data/UserData/appList.pkl")
-        except Exception as e:
-            print("Couldnt find userdata, creating New")
-            mkdir("Data/UserData/")
+        if not path.exists("Data"):
+            mkdir("Data")
+            mkdir("Data/UserData")
             self.appList = []
+        elif not path.exists("Data/UserData"):
+            mkdir("Data/UserData")
+            self.appList = []
+        else:
+            self.appList = utils.get_object("Data/UserData/appList.pkl")
         self.thread = None
         self.processes = []
 
@@ -159,18 +162,12 @@ class MainWindow(object):
 
             self.run_command(command, app_name, k)
 
-    def quit_application(self):
+    def onClick_pushButton_quit(self):
         for p in self.processes:
             p.terminate()
-
-        # Wait for the processes to finish
         for p in self.processes:
             p.wait()
-
         QtWidgets.QApplication.quit()
-
-    def onClick_pushButton_quit(self):
-        self.quit_application()
         sys.exit()
 
     def onActivation_listWidget(self, item):
