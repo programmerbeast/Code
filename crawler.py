@@ -49,8 +49,6 @@ def crawler(
                     continuation_token=continuation_token,
                 )
                 final_result += result
-                print(f"Found reviews till {result[-1]['at']}")
-
                 start_date_text = start_date.strftime("%d-%m-%Y")
                 current_progress_date_text = result[-1]["at"].strftime("%d-%m-%Y")
                 end_date_text = final_result[0]["at"].strftime("%d-%m-%Y")
