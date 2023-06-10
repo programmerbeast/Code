@@ -25,10 +25,6 @@ def crawler(
     window = ProgressBarWindow()
     window.show()
     final_result = []
-    if start_date == None:
-        utils.printProgressBar(
-            0, epochs, prefix="Collection Progress:", suffix="Complete", length=50
-        )
     try:
         if start_date == None:
             print("Epochs")
@@ -40,13 +36,6 @@ def crawler(
                     continuation_token=continuation_token,
                 )
                 final_result += result
-                utils.printProgressBar(
-                    i + 1,
-                    epochs,
-                    prefix="Collection Progress:",
-                    suffix="Complete",
-                    length=50,
-                )
                 window.update_progress(int(100 * (i + 1) / epochs))
                 QApplication.processEvents()
         else:
@@ -60,9 +49,6 @@ def crawler(
                     continuation_token=continuation_token,
                 )
                 final_result += result
-                # print("startdate", type(start_date))
-                # print("nowDate:", type(result[-1]['at'].split()[0]))
-
                 start_date_text = start_date.strftime("%d-%m-%Y")
                 current_progress_date_text = result[-1]["at"].strftime("%d-%m-%Y")
                 end_date_text = final_result[0]["at"].strftime("%d-%m-%Y")
@@ -93,7 +79,10 @@ def crawler(
 # 2: When you provide a start_date, it will fetch all reviews till that date.
 def driverCrawler(app_name, app_id, epochs=10, start_date=None, batch_size=100):
     print(f"Running Crawler for {app_name} with id {app_id}")
-    subdirs = listdir("Data")
+    try:
+        subdirs = listdir("Data")
+    except:
+        mkdir("Data/")
     final_path = path.join("Data", app_name)
     if app_name in subdirs:
         continuation_token = utils.get_object(
@@ -103,6 +92,9 @@ def driverCrawler(app_name, app_id, epochs=10, start_date=None, batch_size=100):
         print("Creating new")
         mkdir(final_path)
         continuation_token = None
+        utils.save_object(
+            continuation_token, path.join(final_path, "Continuation_Token.pkl")
+        )
 
     result, continuation_token = crawler(
         app_id=app_id,

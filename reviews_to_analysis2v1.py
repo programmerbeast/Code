@@ -168,7 +168,7 @@ def analyze_dataframe(df_reviews):
 
 
 def analyze_reviews(app_name):
-    folder_path = "saved_dataframes"
+    folder_path = os.path.join("saved_dataframes", app_name)
     df_saved = pd.DataFrame()
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
@@ -179,7 +179,8 @@ def analyze_reviews(app_name):
     else:
         print("No csv files found")
 
-    directory = "Data/{}".format(app_name)
+    #directory = "Data/{}".format(app_name)
+    directory = os.path.join("Data", app_name)
     arr_files = order_csv_files(directory, descending=False)
     df_reviews = append_df(directory, arr_files)
     if not df_saved.empty:
@@ -197,8 +198,8 @@ def analyze_reviews(app_name):
         df_reviews = analyze_dataframe(df_reviews)
         df_reviews = df_reviews.sort_index()
 
-    file_name = str(df_reviews["days"][0]) + ":" + str(df_reviews["days"][-1])
-    df_reviews.to_csv(os.path.join(folder_path, file_name))
+    file_name = str(str(df_reviews["days"].iloc[0]) + "_" + str(df_reviews["days"].iloc[-1]) + ".csv")
+    df_reviews.to_csv(os.path.join(folder_path, file_name), encoding='utf-8', index=False)
     return df_reviews
 
 

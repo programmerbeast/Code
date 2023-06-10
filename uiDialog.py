@@ -347,7 +347,10 @@ class SelectStartDateDialog(object):
         )
 
     def onClick_pushButton_select(self):
-        startDate = datetime.strptime(self.dateEdit_startDate.text(), "%d/%m/%Y")
+        if "/" in self.dateEdit_startDate.text():
+            startDate = datetime.strptime(self.dateEdit_startDate.text(), "%d/%m/%Y")
+        elif "-" in self.dateEdit_startDate.text():
+            startDate = datetime.strptime(self.dateEdit_startDate.text(), "%d-%m-%Y")
         print(f"Crawling till : {startDate}")
         driverCrawler(self.appName, self.appId, start_date=startDate)
         self.parentDialog.close()

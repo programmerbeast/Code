@@ -53,7 +53,7 @@ app.layout = html.Div(
     className="container",
     children=[
         html.P(
-            f"Review analysis for:{app_name}, Between start_date:{time_start} and end_date:{time_end}"
+            f"Review analysis for:{app_name}, Between start_date:{time_start} and end_date:{time_end}, date format is MM/DD/YYYY"
         ),
         html.Div(
             [
@@ -316,15 +316,6 @@ def toggle_sidebar(n_clicks):
         return {"display": "none"}
     else:
         return {"display": "block"}
-
-
-@server.route("/shutdown", methods=["GET"])
-def shutdown():
-    func = flask.request.environ.get("werkzeug.server.shutdown")
-    if func is None:
-        raise RuntimeError("Not running with the Werkzeug server")
-    func()
-    return "Server shutting down..."
 
 
 if __name__ == "__main__":
