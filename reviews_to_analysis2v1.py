@@ -1,7 +1,6 @@
 import os
 from textblob import TextBlob
 import pandas as pd
-import nltk
 from utils import (
     order_csv_files,
     append_df,
@@ -91,12 +90,12 @@ def keywords_positive_negative_time(keywords, df_reviews, time_start, time_end):
         )
 
     greater_than_zero_counts = (
-        greater_than_zero.groupby(["days"]).size().rename("positive_reviews")
+        greater_than_zero.groupby(["days"]).size().rename("num_positive_reviews")
     )
     less_than_zero_counts = (
-        less_than_zero.groupby(["days"]).size().rename("negative_reviews")
+        less_than_zero.groupby(["days"]).size().rename("num_negative_reviews")
     )
-    is_zero = is_zero.groupby(["days"]).size().rename("neutral_reviews")
+    is_zero = is_zero.groupby(["days"]).size().rename("num_neutral_reviews")
     result_df = pd.merge(
         greater_than_zero_counts,
         less_than_zero_counts,
@@ -201,11 +200,6 @@ def analyze_reviews(app_name):
     file_name = str(df_reviews["days"][0]) + ":" + str(df_reviews["days"][-1])
     df_reviews.to_csv(os.path.join(folder_path, file_name))
     return df_reviews
-
-
-def autospell(text):
-    corrected_sentence = [spell(w) for w in (nltk.word_tokenize(text))]
-    return " ".join(corrected_sentence)
 
 
 def get_reviews(df_reviews, keywords, time_start, time_end):

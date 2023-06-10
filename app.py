@@ -1,8 +1,7 @@
 import dash
-import time
+from utils import delayed_open
 import flask
 from dash import html, dcc
-
 from dash.dependencies import Input, Output, State
 from reviews_to_analysis2v1 import (
     analyze_reviews,
@@ -15,25 +14,25 @@ from make_graph import (
     run_positive_negative_neutral_percentage,
 )
 import sys
-import webbrowser
+
 
 external_stylesheets = ["styles.css"]
 app = dash.Dash(__name__, external_stylesheets=[external_stylesheets])
+
+port = str(8050 + int(sys.argv[2]))
+address = "127.0.0.1"
+
 server = app.server
 app_name = sys.argv[1]
 keywords = [""]
 directory = "Data/{}".format(app_name)
 df_reviews = analyze_reviews(app_name)
-
 time_start = df_reviews["days"][0]
 time_end = df_reviews["days"][-1]
-address = "http://127.0.0.1"
-port = str(8050 + int(sys.argv[2]))
-url = address + ":" + port
-
 fig = run_graph_time(time_start, time_end, keywords, df_reviews)
 fig2 = run_graph_keyword(time_start, time_end, df_reviews)
 fig3 = run_positive_negative_neutral_percentage(df_reviews)
+
 
 # Define the layout of the app
 scroll_box_content = []
@@ -319,12 +318,6 @@ def toggle_sidebar(n_clicks):
         return {"display": "block"}
 
 
-def delayed_open(url):
-    time.sleep(3)
-    print(url)
-    webbrowser.open(url)
-
-
 @server.route("/shutdown", methods=["GET"])
 def shutdown():
     func = flask.request.environ.get("werkzeug.server.shutdown")
@@ -334,9 +327,7 @@ def shutdown():
     return "Server shutting down..."
 
 
-address = "127.0.0.1"
-port = str(8050 + int(sys.argv[2]))
-url = "http://" + address + ":" + port
-
-delayed_open(url)
-app.run_server(debug=True, host=address, port=port, use_reloader=False)
+if __name__ == "__main__":
+    url = "http://" + address + ":" + port
+    delayed_open(url)
+    app.run_server(debug=True, host=address, port=port, use_reloader=False)

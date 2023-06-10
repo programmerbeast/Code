@@ -8,6 +8,29 @@
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from abstractUiClasses import confirmDialog
+import sys
+from PySide6.QtCore import (
+    QCoreApplication,
+    QMetaObject,
+    QRect,
+    Qt,
+    QDateTime,
+    QDate,
+    QTime,
+)
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QRadioButton,
+    QWidget,
+    QDateEdit,
+    QSpinBox,
+)
+import sys
+from datetime import datetime
+from crawler import driverCrawler
 
 
 class NewAppDialog(object):
@@ -170,7 +193,7 @@ class ChangeAppDialog(object):
 
     def onClick_pushButton_deleteApp(self):
         dialog_confirmDelete = QtWidgets.QDialog()
-        obj_confirmDelete = confirmDelete(
+        obj_confirmDelete = ConfirmDelete(
             "Are you sure you want to delete this app?",
             self.appList,
             self.itemIndex,
@@ -194,7 +217,7 @@ class ChangeAppDialog(object):
             or self.lineEdit_appId.text() != self.appList[self.itemIndex]["appId"]
         ):
             dialog_confirmDiscardChange = QtWidgets.QDialog()
-            obj_confirmDiscardChange = confirmDiscardChange(
+            obj_confirmDiscardChange = ConfirmDiscardChange(
                 "App has unsaved changes. \nDo you want to discard changes?",
                 self.parent,
             )
@@ -204,7 +227,7 @@ class ChangeAppDialog(object):
             self.parent.close()
 
 
-class confirmDelete(confirmDialog):
+class ConfirmDelete(confirmDialog):
     def __init__(self, text, appList, itemIndex, editDeleteDialog):
         super().__init__(text)
         self.appList = appList
@@ -220,7 +243,7 @@ class confirmDelete(confirmDialog):
         self.parentDialog.close()
 
 
-class confirmDiscardChange(confirmDialog):
+class ConfirmDiscardChange(confirmDialog):
     def __init__(self, text, editDeleteDialog):
         super().__init__(text)
         self.parentDialog = editDeleteDialog
@@ -231,3 +254,249 @@ class confirmDiscardChange(confirmDialog):
     def onClick_pushButton_yes(self):
         self.parent.close()
         self.parentDialog.close()
+
+
+class ShowTextDialog(object):
+    def __init__(self, text, alignH="c", fontSize=15):
+        self.text = text
+        self.alignH = alignH
+        self.fontSize = fontSize
+
+    def setupUi(self, Dialog):
+        self.parent = Dialog
+        if not Dialog.objectName():
+            Dialog.setObjectName("Dialog")
+        Dialog.resize(311, 100)
+        self.label = QtWidgets.QLabel(Dialog)
+        self.label.setObjectName("label")
+        self.label.setGeometry(QtCore.QRect(20, 10, 281, 71))
+        font = QtGui.QFont()
+        font.setPointSize(self.fontSize)
+        self.label.setFont(font)
+        match self.alignH:
+            case "c":
+                self.label.setAlignment(QtCore.Qt.AlignCenter)
+            case "l":
+                self.label.setAlignment(QtCore.Qt.AlignLeft)
+            case "r":
+                self.label.setAlignment(QtCore.Qt.AlignRight)
+
+        self.retranslateUi(Dialog)
+
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        Dialog.setWindowTitle(
+            QtCore.QCoreApplication.translate("Dialog", "Dialog", None)
+        )
+        self.label.setText(QtCore.QCoreApplication.translate("Dialog", self.text, None))
+
+    def updateText(self, newText):
+        self.text = newText
+        self.label.setText(newText)
+
+
+class SelectStartDateDialog(object):
+    def __init__(self, parentDialog, appName, appId) -> None:
+        super().__init__()
+        self.parentDialog = parentDialog
+        self.appName = appName
+        self.appId = appId
+
+    def setupUi(self, Dialog):
+        self.parent = Dialog
+        if not Dialog.objectName():
+            Dialog.setObjectName("Dialog")
+        Dialog.resize(247, 100)
+        self.horizontalLayoutWidget = QWidget(Dialog)
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.horizontalLayoutWidget.setGeometry(QRect(20, 10, 211, 61))
+        self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.label = QLabel(self.horizontalLayoutWidget)
+        self.label.setObjectName("label")
+
+        self.horizontalLayout.addWidget(self.label)
+
+        self.dateEdit_startDate = QDateEdit(self.horizontalLayoutWidget)
+        self.dateEdit_startDate.setObjectName("dateEdit")
+        self.dateEdit_startDate.setDateTime(
+            QDateTime(QDate(2020, 1, 1), QTime(0, 0, 0))
+        )
+        self.dateEdit_startDate.setCalendarPopup(True)
+
+        self.horizontalLayout.addWidget(self.dateEdit_startDate)
+
+        self.pushButton_select = QPushButton(Dialog)
+        self.pushButton_select.setObjectName("pushButton")
+        self.pushButton_select.setGeometry(QRect(80, 70, 75, 24))
+        self.pushButton_select.clicked.connect(self.onClick_pushButton_select)
+
+        self.retranslateUi(Dialog)
+
+        QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", "Dialog", None))
+        self.label.setText(
+            QCoreApplication.translate("Dialog", "Select Start Date:", None)
+        )
+        self.pushButton_select.setText(
+            QCoreApplication.translate("Dialog", "Select", None)
+        )
+
+    def onClick_pushButton_select(self):
+        startDate = datetime.strptime(self.dateEdit_startDate.text(), "%d-%m-%Y")
+        print(f"Crawling till : {startDate}")
+        driverCrawler(self.appName, self.appId, start_date=startDate)
+        self.parentDialog.close()
+        self.parent.close()
+
+
+class SelectNumReviewsDialog(object):
+    def __init__(self, parentDialog, appName, appId) -> None:
+        super().__init__()
+        self.parentDialog = parentDialog
+        self.appName = appName
+        self.appId = appId
+
+    def setupUi(self, Dialog):
+        self.parent = Dialog
+        if not Dialog.objectName():
+            Dialog.setObjectName("Dialog")
+        Dialog.resize(311, 100)
+        self.horizontalLayoutWidget = QWidget(Dialog)
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.horizontalLayoutWidget.setGeometry(QRect(10, 10, 301, 61))
+        self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.label = QLabel(self.horizontalLayoutWidget)
+        self.label.setObjectName("label")
+
+        self.horizontalLayout.addWidget(self.label)
+
+        self.spinBox = QSpinBox(self.horizontalLayoutWidget)
+        self.spinBox.setObjectName("spinBox")
+        self.spinBox.setAlignment(Qt.AlignRight | Qt.AlignTrailing | Qt.AlignVCenter)
+        self.spinBox.setMaximum(999999999)
+        self.spinBox.setValue(10000)
+
+        self.horizontalLayout.addWidget(self.spinBox)
+
+        self.pushButton_select = QPushButton(Dialog)
+        self.pushButton_select.setObjectName("pushButton")
+        self.pushButton_select.setGeometry(QRect(120, 70, 75, 24))
+        self.pushButton_select.clicked.connect(self.onClick_pushButton_select)
+
+        self.retranslateUi(Dialog)
+
+        QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", "Dialog", None))
+        self.label.setText(
+            QCoreApplication.translate("Dialog", "Select Number of Reviews:", None)
+        )
+        self.pushButton_select.setText(
+            QCoreApplication.translate("Dialog", "Select", None)
+        )
+
+    def onClick_pushButton_select(self):
+        numReviews = int(self.spinBox.text())
+        if numReviews > 1000 and numReviews % 1000 == 0:
+            batch_size = 1000
+        elif numReviews > 100:
+            batch_size = 100
+        else:
+            batch_size = 1
+
+        epochs = numReviews // batch_size
+        print(f"Crawling till : {numReviews} reviews")
+        driverCrawler(self.appName, self.appId, epochs=epochs, batch_size=batch_size)
+        self.parentDialog.close()
+        self.parent.close()
+
+
+class RunCrawlerDialog(object):
+    def __init__(self, appName, appId) -> None:
+        self.appName = appName
+        self.appId = appId
+
+    def setupUi(self, Dialog):
+        self.parent = Dialog
+        if not Dialog.objectName():
+            Dialog.setObjectName("Dialog")
+        Dialog.resize(400, 175)
+        self.label_main = QLabel(Dialog)
+        self.label_main.setObjectName("label")
+        self.label_main.setGeometry(QRect(30, 30, 321, 31))
+        font = QFont()
+        font.setPointSize(15)
+        font.setBold(False)
+        self.label_main.setFont(font)
+        self.label_main.setAlignment(Qt.AlignCenter)
+        self.horizontalLayoutWidget = QWidget(Dialog)
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.horizontalLayoutWidget.setGeometry(QRect(20, 60, 352, 80))
+        self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.radioButton_num_of_reviews = QRadioButton(self.horizontalLayoutWidget)
+        self.radioButton_num_of_reviews.setObjectName("radioButton")
+        self.radioButton_num_of_reviews.setEnabled(True)
+        self.radioButton_num_of_reviews.setChecked(True)
+
+        self.horizontalLayout.addWidget(self.radioButton_num_of_reviews)
+
+        self.radioButton_start_date_reviews = QRadioButton(self.horizontalLayoutWidget)
+        self.radioButton_start_date_reviews.setObjectName("radioButton_2")
+
+        self.horizontalLayout.addWidget(self.radioButton_start_date_reviews)
+
+        self.pushButton_select = QPushButton(Dialog)
+        self.pushButton_select.setObjectName("pushButton")
+        self.pushButton_select.setGeometry(QRect(310, 140, 75, 24))
+        self.pushButton_select.clicked.connect(self.onClick_pushButton_select)
+
+        self.retranslateUi(Dialog)
+
+        QMetaObject.connectSlotsByName(Dialog)
+
+    # setupUi
+
+    def retranslateUi(self, Dialog):
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", "Dialog", None))
+        self.label_main.setText(
+            QCoreApplication.translate("Dialog", "Select method of crawling...", None)
+        )
+        self.radioButton_num_of_reviews.setText(
+            QCoreApplication.translate("Dialog", "Crawl by number of review", None)
+        )
+        self.radioButton_start_date_reviews.setText(
+            QCoreApplication.translate("Dialog", "Crawl by start date of reviews", None)
+        )
+        self.pushButton_select.setText(
+            QCoreApplication.translate("Dialog", "Select", None)
+        )
+
+    # retranslateUi
+
+    def onClick_pushButton_select(self):
+        dialog_showText = QtWidgets.QDialog()
+        if self.radioButton_num_of_reviews.isChecked():
+            obj_showText = SelectNumReviewsDialog(self.parent, self.appName, self.appId)
+        else:
+            obj_showText = SelectStartDateDialog(self.parent, self.appName, self.appId)
+        obj_showText.setupUi(dialog_showText)
+        dialog_showText.exec()
+
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    mainWindow = QtWidgets.QMainWindow()
+    ui = RunCrawlerDialog("blah", "blah")
+    ui.setupUi(mainWindow)
+    mainWindow.show()
+    sys.exit(app.exec())

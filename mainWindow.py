@@ -7,7 +7,7 @@
 
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from uiDialog import NewAppDialog, ChangeAppDialog
+from uiDialog import NewAppDialog, ChangeAppDialog, RunCrawlerDialog
 from crawler import driverCrawler
 import subprocess
 import sys
@@ -49,16 +49,8 @@ class MainWindow(object):
         font.setPointSize(35)
 
         self.label_companyName.setFont(font)
-        self.label_companyName.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_companyName.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         self.label_companyName.setObjectName("label_companyName")
-
-        self.graphicsView = QtWidgets.QGraphicsView(parent=self.centralwidget)
-        self.graphicsView.setGeometry(QtCore.QRect(150, 20, 61, 61))
-
-        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        brush.setStyle(QtCore.Qt.BrushStyle.NoBrush)
-        self.graphicsView.setBackgroundBrush(brush)
-        self.graphicsView.setObjectName("graphicsView")
 
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.centralwidget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(380, 110, 231, 271))
@@ -143,7 +135,7 @@ class MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label_companyName.setText(_translate("MainWindow", "Company Name"))
+        self.label_companyName.setText(_translate("MainWindow", "revalyzer"))
         self.pushButton_newApp.setText(_translate("MainWindow", "Add new app"))
         self.pushButton_runCrawler.setText(_translate("MainWindow", "Run Crawler"))
         self.pushButton_displayGraph.setText(_translate("MainWindow", "Display graph"))
@@ -165,16 +157,19 @@ class MainWindow(object):
         self.updateListWidget()
 
     def onClick_pushButton_runCrawler(self):
-        for element in self.appList:
-            appName = element["appName"]
-            appId = element["appId"]
-            driverCrawler(
-                appName, appId, epochs=100
-            )  # change the epochs to incerease number of reviews
+        selected_item = self.listWidget.currentItem()
+        if selected_item is not None:
+            appName = selected_item.text()
+            for element in self.appList:
+                if element["appName"] == appName:
+                    appId = element["appId"]
+            dialog_newApp = QtWidgets.QDialog()
+            obj_runCrawler = RunCrawlerDialog(appName, appId)
+            obj_runCrawler.setupUi(dialog_newApp)
+            dialog_newApp.exec()
 
     def onClick_pushButton_displayGraph(self):
-        # Create a new thread and run the command in it
-
+        # Create a new thread and display graph
         selected_item = self.listWidget.currentItem()
         if selected_item is not None:
             global k
