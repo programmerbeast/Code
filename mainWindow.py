@@ -8,23 +8,29 @@
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from uiDialog import NewAppDialog, ChangeAppDialog, RunCrawlerDialog
-from crawler import driverCrawler
 import subprocess
-import threading
-
 import sys
+import requests
+from os import mkdir
+import utils
 
 k = -1
-
-
+stop_flag = False
+shutdown = False
 command = ["python", "app.py"]
 
 
 class MainWindow(object):
     def __init__(self):
         # List of Dict(appName, appId)
-        self.appList = []
+        try:
+            self.appList = utils.get_object("Data/UserData/appList.pkl")
+        except Exception as e:
+            print("Couldnt find userdata, creating New")
+            mkdir("Data/UserData/")
+            self.appList = []
         self.thread = None
+        self.processes = []
 
     def setupUi(self, MainWindow):
         # Ui setup
@@ -32,6 +38,12 @@ class MainWindow(object):
         MainWindow.resize(640, 480)
         MainWindow.setMinimumSize(QtCore.QSize(640, 480))
         MainWindow.setMaximumSize(QtCore.QSize(640, 480))
+        MainWindow.setWindowFlags(
+            QtCore.Qt.Window
+            | QtCore.Qt.CustomizeWindowHint
+            | QtCore.Qt.WindowTitleHint
+            | QtCore.Qt.WindowMinimizeButtonHint
+        )
 
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -94,32 +106,6 @@ class MainWindow(object):
         self.label_footer.setObjectName("label_footer")
         MainWindow.setCentralWidget(self.centralwidget)
 
-        # Test
-        self.appList.append(
-            {
-                "appName": "Twitter",
-                "appId": "com.twitter.android",
-            }
-        )
-        self.appList.append(
-            {
-                "appName": "Instagram",
-                "appId": "com.instagram.android",
-            }
-        )
-        self.appList.append(
-            {
-                "appName": "Facebook",
-                "appId": "com.facebook.katana",
-            }
-        )
-        self.appList.append(
-            {
-                "appName": "LinkedIn",
-                "appId": "com.linkedin.android",
-            }
-        )
-
         self.updateListWidget()
 
         self.retranslateUi(MainWindow)
@@ -139,6 +125,7 @@ class MainWindow(object):
         )
 
     def updateListWidget(self):
+        utils.save_object(self.appList, "Data/UserData/appList.pkl")
         self.listWidget.clear()
         for element in self.appList:
             self.listWidget.addItem(element["appName"])
@@ -170,12 +157,20 @@ class MainWindow(object):
             k += 1
             app_name = selected_item.text()
 
-            self.thread = threading.Thread(
-                target=run_command, args=(command, app_name, k)
-            )
-            self.thread.start()
+            self.run_command(command, app_name, k)
+
+    def quit_application(self):
+        for p in self.processes:
+            p.terminate()
+
+        # Wait for the processes to finish
+        for p in self.processes:
+            p.wait()
+
+        QtWidgets.QApplication.quit()
 
     def onClick_pushButton_quit(self):
+        self.quit_application()
         sys.exit()
 
     def onActivation_listWidget(self, item):
@@ -189,11 +184,10 @@ class MainWindow(object):
         dialog_listEditDelete.exec()
         self.updateListWidget()
 
-
-def run_command(command, arg1, arg2):
-    command2 = command + [arg1] + [str(arg2)]
-    process = subprocess.Popen(command2)
-    process.communicate()
+    def run_command(self, command, arg1, arg2):
+        command2 = command + [arg1] + [str(arg2)]
+        process = subprocess.Popen(command2)
+        self.processes.append(process)
 
 
 if __name__ == "__main__":

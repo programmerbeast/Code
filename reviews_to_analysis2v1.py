@@ -139,32 +139,16 @@ def keyword_extraction(review):
     return keywords
 
 
-def analyze_reviews(app_name):
-    folder_path = "saved_dataframes"
-    df_saved = pd.DataFrame()
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-    # Check if the folder contains any CSV files
-    csv_files = [file for file in os.listdir(folder_path) if file.endswith(".csv")]
-    if csv_files:
-        df_saved = append_df(folder_path, csv_files)
-    else:
-        print("No csv files found")
-
-    directory = "Data/{}".format(app_name)
-    arr_files = order_csv_files(directory, descending=False)
-    df_reviews = append_df(directory, arr_files)
-    if not df_saved.empty:
-        df_reviews = pd.concat([df_reviews, df_saved], axis=0)
-        df_reviews = df_reviews.drop_duplicates(subset="reviewId", keep=False)
+def analyze_dataframe(df_reviews):
     df_reviews = df_reviews.sort_index()
-    # for the keyword fully
+
     df_reviews["days"] = df_reviews["at"].transform(lambda x: x.split(" ")[0])
     df_reviews = df_reviews.set_index(df_reviews["at"].rename("index"))
 
     df_reviews["content"] = df_reviews["content"].transform(
         lambda x: clean(x, no_emoji=True)
     )
+
     df_reviews.dropna(subset=["content"], inplace=True)
 
     df_reviews = df_reviews.sort_index()
@@ -180,7 +164,41 @@ def analyze_reviews(app_name):
     df_reviews = df_reviews.drop(
         df_reviews[df_reviews["keywords"].apply(lambda x: len(x) == 0)].index
     )
+    return df_reviews
 
+
+def analyze_reviews(app_name):
+    folder_path = "saved_dataframes"
+    df_saved = pd.DataFrame()
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    csv_files = [file for file in os.listdir(folder_path) if file.endswith(".csv")]
+    if csv_files:
+        df_saved = append_df(folder_path, csv_files)
+    else:
+        print("No csv files found")
+
+    directory = "Data/{}".format(app_name)
+    arr_files = order_csv_files(directory, descending=False)
+    df_reviews = append_df(directory, arr_files)
+    if not df_saved.empty:
+        common_rows = df_reviews[df_reviews["reviewId"].isin(df_saved["reviewId"])]
+        if not common_rows.empty:
+            df_reviews = df_reviews[~df_reviews["reviewId"].isin(df_saved["reviewId"])]
+            df_reviews = analyze_dataframe(df_reviews)
+            df_reviews = pd.concat([df_reviews, common_rows], axis=0)
+            df_reviews = df_reviews.sort_index()
+
+        else:
+            df_reviews = analyze_dataframe(df_reviews)
+            df_reviews = df_reviews.sort_index()
+    else:
+        df_reviews = analyze_dataframe(df_reviews)
+        df_reviews = df_reviews.sort_index()
+
+    file_name = str(df_reviews["days"][0]) + ":" + str(df_reviews["days"][-1])
+    df_reviews.to_csv(os.path.join(folder_path, file_name))
     return df_reviews
 
 
@@ -197,6 +215,7 @@ def get_reviews(df_reviews, keywords, time_start, time_end):
 def get_keywords_dict(df_reviews, time_start, time_end):
     positive_keywords_dict = {}
     negative_keywords_dict = {}
+    neutral_keywords_dict = {}
     df_reviews_in_time = df_reviews[
         df_reviews["days"].apply(lambda x: first_date_before_second_date(time_start, x))
         & df_reviews["days"].apply(lambda x: first_date_before_second_date(x, time_end))
@@ -208,10 +227,32 @@ def get_keywords_dict(df_reviews, time_start, time_end):
                     positive_keywords_dict[j] += 1
                 else:
                     positive_keywords_dict[j] = 1
-            elif df_reviews_in_time["sentiment_polarity"][i] <= 0:
+            elif df_reviews_in_time["sentiment_polarity"][i] < 0:
                 if j in negative_keywords_dict:
                     negative_keywords_dict[j] += 1
                 else:
                     negative_keywords_dict[j] = 1
+            elif df_reviews_in_time["sentiment_polarity"][i] == 0:
+                if j in neutral_keywords_dict:
+                    neutral_keywords_dict[j] += 1
+                else:
+                    neutral_keywords_dict[j] = 1
 
-    return (positive_keywords_dict, negative_keywords_dict)
+    return (positive_keywords_dict, negative_keywords_dict, neutral_keywords_dict)
+
+
+def get_positive_negative_neutral_percentage(df_reviews):
+    negative_percentage = len(df_reviews[df_reviews["sentiment_polarity"] < 0]) / len(
+        df_reviews
+    )
+    neutral_percentage = len(df_reviews[df_reviews["sentiment_polarity"] == 0]) / len(
+        df_reviews
+    )
+    positive_percentage = len(df_reviews[df_reviews["sentiment_polarity"] > 0]) / len(
+        df_reviews
+    )
+    return (
+        positive_percentage * 100,
+        negative_percentage * 100,
+        neutral_percentage * 100,
+    )

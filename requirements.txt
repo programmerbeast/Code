@@ -12,7 +12,7 @@ sklearn-features==0.0.2
 clean-text==0.6.0
 google_play_scraper==1.2.3
 pandas==1.4.3
-pyside6==6.5.0
 plotly==5.14.1
 nltk==3.8.1
 PyAutoGUI==0.9.54
+requests==2.31.0

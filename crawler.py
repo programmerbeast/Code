@@ -5,7 +5,9 @@ import utils
 from datetime import datetime
 import string
 import nltk
-
+from uiProgressBar import ProgressBarWindow
+from PySide6.QtWidgets import QApplication
+from datetime import datetime
 
 stopwords = nltk.corpus.stopwords.words("english")
 
@@ -20,11 +22,9 @@ def clean_review(review):
 def crawler(
     app_id, continuation_token=None, epochs=10, start_date=None, batch_size=100
 ):
+    window = ProgressBarWindow()
+    window.show()
     final_result = []
-    if start_date == None:
-        utils.printProgressBar(
-            0, epochs, prefix="Collection Progress:", suffix="Complete", length=50
-        )
     try:
         if start_date == None:
             print("Epochs")
@@ -36,13 +36,8 @@ def crawler(
                     continuation_token=continuation_token,
                 )
                 final_result += result
-                utils.printProgressBar(
-                    i + 1,
-                    epochs,
-                    prefix="Collection Progress:",
-                    suffix="Complete",
-                    length=50,
-                )
+                window.update_progress(int(100 * (i + 1) / epochs))
+                QApplication.processEvents()
         else:
             print("StartDate")
             stop = False
@@ -55,11 +50,27 @@ def crawler(
                 )
                 final_result += result
                 print(f"Found reviews till {result[-1]['at']}")
+
+                start_date_text = start_date.strftime("%d-%m-%Y")
+                current_progress_date_text = result[-1]["at"].strftime("%d-%m-%Y")
+                end_date_text = final_result[0]["at"].strftime("%d-%m-%Y")
+                days_start_to_end = utils.count_days_between(
+                    start_date_text, end_date_text
+                )
+                days_current_progress_to_end = utils.count_days_between(
+                    current_progress_date_text, end_date_text
+                )
+                window.update_progress(
+                    int((days_current_progress_to_end / days_start_to_end) * 100)
+                )
+                QApplication.processEvents()
+
                 if result[-1]["at"] < start_date:
                     print("Stopping")
                     stop = True
-    except:
+    except Exception as e:
         print("Couldnt finish collection.")
+        print(e)
     finally:
         print(f"Total reviews collected: {len(final_result)}")
         return final_result, continuation_token
@@ -80,6 +91,9 @@ def driverCrawler(app_name, app_id, epochs=10, start_date=None, batch_size=100):
         print("Creating new")
         mkdir(final_path)
         continuation_token = None
+        utils.save_object(
+            continuation_token, path.join(final_path, "Continuation_Token.pkl")
+        )
 
     result, continuation_token = crawler(
         app_id=app_id,

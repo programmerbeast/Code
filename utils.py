@@ -4,6 +4,8 @@ import pyautogui
 from os import path
 import pandas as pd
 from datetime import datetime
+import webbrowser
+import time
 
 
 def printProgressBar(
@@ -103,9 +105,12 @@ def first_date_before_second_date(first_date, second_date):
     second_date = datetime.strptime(second_date, "%Y-%m-%d")
     return first_date <= second_date
 
+
 def get_screen_size():
     width, height = pyautogui.size()
     return (width, height)
+
+
 def retrieve_app_id(appname):
     file = path.join("Data", "name_id_map.csv")
     df = pd.read_csv(file)
@@ -115,3 +120,19 @@ def retrieve_app_id(appname):
     except:
         print(f"{appname} not in map.")
     return id
+
+
+def count_days_between(start_date, end_date):
+    # Convert the start and end dates to datetime objects
+    start_date = datetime.strptime(start_date, "%d-%m-%Y")
+    end_date = datetime.strptime(end_date, "%d-%m-%Y")
+
+    # Calculate the difference between the two dates
+    days = (end_date - start_date).days
+
+    return days
+
+
+def delayed_open(url):
+    time.sleep(5)
+    webbrowser.open(url)

@@ -1,41 +1,39 @@
 import dash
-
-# import dash_core_components as dcc
-# import dash_html_components as html
+from utils import delayed_open
+import flask
 from dash import html, dcc
-import plotly.express as px
-import pandas as pd
 from dash.dependencies import Input, Output, State
 from reviews_to_analysis2v1 import (
     analyze_reviews,
     get_reviews,
     get_reviews_by_keyword,
 )
-from make_graph import run_graph_time, run_graph_keyword
+from make_graph import (
+    run_graph_time,
+    run_graph_keyword,
+    run_positive_negative_neutral_percentage,
+)
 import sys
-import webbrowser
-
 
 
 external_stylesheets = ["styles.css"]
 app = dash.Dash(__name__, external_stylesheets=[external_stylesheets])
+
+port = str(8050 + int(sys.argv[2]))
+address = "127.0.0.1"
+
+server = app.server
 app_name = sys.argv[1]
-# print(app_name)
-# app_name = "Twitter"
 keywords = [""]
 directory = "Data/{}".format(app_name)
 df_reviews = analyze_reviews(app_name)
-
 time_start = df_reviews["days"][0]
 time_end = df_reviews["days"][-1]
-address = "http://127.0.0.1"
-port = str(8050 + int(sys.argv[2]))
-url = address + ":" + port
-
 fig = run_graph_time(time_start, time_end, keywords, df_reviews)
 fig2 = run_graph_keyword(time_start, time_end, df_reviews)
-print("f")
-webbrowser.open(url)
+fig3 = run_positive_negative_neutral_percentage(df_reviews)
+
+
 # Define the layout of the app
 scroll_box_content = []
 scroll_box = html.Div(
@@ -54,6 +52,9 @@ scroll_box = html.Div(
 app.layout = html.Div(
     className="container",
     children=[
+        html.P(
+            f"Review analysis for:{app_name}, Between start_date:{time_start} and end_date:{time_end}"
+        ),
         html.Div(
             [
                 html.Div(
@@ -63,7 +64,6 @@ app.layout = html.Div(
                         html.Button(
                             id="sidebar-toggle",
                             n_clicks=0,
-                            # children=html.Span(className="sidebar-toggle-icon"),
                             children="Sidebar",
                             style={"background-color": "green"},
                         ),
@@ -71,7 +71,6 @@ app.layout = html.Div(
                             className="sidebar-content",
                             id="sidebar_content",
                             children=[
-                                # html.H1("Sidebar", className="sidebar-title"),
                                 dcc.Tabs(
                                     id="sidebar-tabs",
                                     value="tab-1",
@@ -105,12 +104,6 @@ app.layout = html.Div(
                     children=[
                         html.Div(
                             [
-                                #  html.H1("Review analysis for app:{}".format(app_name)),
-                                # html.Hr(),
-                                # html.H1(
-                                #     "See the amount of positive and negative reviews associated with a keyword through time"
-                                # ),
-                                # html.Hr(),
                                 dcc.DatePickerRange(
                                     id="date-picker-range",
                                     start_date_placeholder_text="Start Date",
@@ -135,6 +128,7 @@ app.layout = html.Div(
                                 "flex": "1",
                                 "height": "800px",
                                 "backgroundColor": "#F2F2F2",
+                                "max-width": "100vw",
                             },
                             config={"responsive": True},
                         ),
@@ -155,55 +149,60 @@ app.layout = html.Div(
                                 ),
                                 html.Button("Update", id="button2"),
                             ],
-                            # style={"width": "100%"},
                         ),
                         dcc.Graph(
                             id="output-graph2",
                             figure=fig2,
                             style={
-                                # "flex": "1",
                                 "backgroundColor": "#F2F2F2",
-                                # "margin-bottom": "50px",
+                                "max-width": "50vw",
                             },
                         ),
                     ],
-                    # style={"flex": "1"},
                 ),
+            ],
+            style={"display": "flex", "gap": "0px", "max-width": "100vw"},
+        ),
+        html.Div(
+            className="container_2",
+            children=[
+                html.Div(
+                    className="div3",
+                    children=[
+                        html.H3("Search for reviews"),
+                        dcc.DatePickerRange(
+                            id="date-picker-range3",
+                            start_date_placeholder_text="Start Date",
+                            end_date_placeholder_text="End Date",
+                            calendar_orientation="vertical",
+                            display_format="MM/DD/YYYY",
+                        ),
+                        dcc.Input(
+                            id="keyword-input2",
+                            placeholder="Enter Keyword",
+                            type="text",
+                            value="",
+                        ),
+                        html.Button(
+                            "See Negative Reviews", id="button4", className="my-button"
+                        ),
+                        html.Button(
+                            "See positive reviews", id="button5", className="my-button"
+                        ),
+                        dcc.Input(
+                            id="input-text", type="text", placeholder="See by topic"
+                        ),
+                        html.Button("Update", id="button3"),
+                        html.Div(id="output-div"),
+                        scroll_box,
+                        html.Hr(style={"margin-top": "400px"}),
+                    ],
+                ),
+                html.Div([dcc.Graph(id="pie-chart", figure=fig3)]),
             ],
             style={"display": "flex", "gap": "0px"},
         ),
-        html.Div(
-            className="div3",
-            children=[
-                html.H3("Search for reviews"),
-                dcc.DatePickerRange(
-                    id="date-picker-range3",
-                    start_date_placeholder_text="Start Date",
-                    end_date_placeholder_text="End Date",
-                    calendar_orientation="vertical",
-                    display_format="MM/DD/YYYY",
-                ),
-                dcc.Input(
-                    id="keyword-input2",
-                    placeholder="Enter Keyword",
-                    type="text",
-                    value="",
-                ),
-                html.Button(
-                    "See Negative Reviews", id="button4", className="my-button"
-                ),
-                html.Button(
-                    "See positive reviews", id="button5", className="my-button"
-                ),
-                dcc.Input(id="input-text", type="text", placeholder="See by topic"),
-                html.Button("Update", id="button3"),
-                html.Div(id="output-div"),
-                scroll_box,
-                html.Hr(style={"margin-top": "400px"}),
-            ]
-        ),
     ],
-    # style={"backgroundColor": "#F2F2F2", "gap": "20px"},
 )
 
 
@@ -219,7 +218,6 @@ app.layout = html.Div(
 )
 def update_graph(n_clicks, start_date, end_date, keyword):
     if start_date is None or end_date is None:
-    
         return dash.no_update
     if n_clicks is not None:
         keywords = keyword.split(",")
@@ -281,7 +279,7 @@ def update_scroll_box(
             ]
         elif n1_clicks is not None and n2_clicks is None:
             df_reviews_by_keyword = df_reviews_by_keyword[
-                df_reviews_by_keyword["sentiment_polarity"] <= 0
+                df_reviews_by_keyword["sentiment_polarity"] < 0
             ]
         if value is not None:
             df_reviews_by_keyword = get_reviews_by_keyword(value, df_reviews_by_keyword)
@@ -321,8 +319,6 @@ def toggle_sidebar(n_clicks):
 
 
 if __name__ == "__main__":
-    address = "127.0.0.1"
-    port = str(8050 + int(sys.argv[2]))
-
-    app.run_server(debug=True, host=address, port=port)
-    
+    url = "http://" + address + ":" + port
+    delayed_open(url)
+    app.run_server(debug=True, host=address, port=port, use_reloader=False)
