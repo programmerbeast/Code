@@ -59,6 +59,7 @@ class MainWindow(object):
 
         self.label_companyName.setFont(font)
         self.label_companyName.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        self.label_companyName.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         self.label_companyName.setObjectName("label_companyName")
 
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.centralwidget)
