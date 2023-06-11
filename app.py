@@ -16,8 +16,7 @@ from make_graph import (
 import sys
 
 
-external_stylesheets = ["styles.css"]
-app = dash.Dash(__name__, external_stylesheets=[external_stylesheets])
+app = dash.Dash(__name__)
 
 port = str(8050 + int(sys.argv[2]))
 address = "127.0.0.1"

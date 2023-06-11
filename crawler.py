@@ -104,7 +104,9 @@ def driverCrawler(app_name, app_id, epochs=10, start_date=None, batch_size=100):
         batch_size=batch_size,
     )
     for review in result:
-        review["content"] = clean_review(review["content"])
+        if review["content"] is not None:
+            review["content"] = clean_review(review["content"])
+
     utils.save_object(
         continuation_token, path.join(final_path, "Continuation_Token.pkl")
     )

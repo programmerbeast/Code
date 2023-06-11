@@ -57,7 +57,9 @@ def run_positive_negative_neutral_percentage(df_reviews):
     )
     fig.update_layout(title="Distribution of all reviews")
     width_screen, _ = get_screen_size()
-    fig.update_layout(width=int(0.3125*width_screen), height=int(0.3125*width_screen))
+    fig.update_layout(
+        width=int(0.3125 * width_screen), height=int(0.3125 * width_screen)
+    )
     return fig
 
 
@@ -105,7 +107,7 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
             line=dict(color="yellow"),
         )
     )
-    fig.update_annotations(font_size=int(0.00625*width_screen))
+    fig.update_annotations(font_size=int(0.00625 * width_screen))
     fig.update_layout(
         plot_bgcolor="rgba(33,67, 156, 0.8)",
         title=f"Positive, Negative and Neutral reviews with the keyword {keywords}",
@@ -114,7 +116,7 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
         width=int(width_screen * (0.55)),
         height=int(height_screen / 1.3),
         xaxis=dict(rangeslider=dict(visible=True, thickness=0.05), type="date"),
-        legend=dict(title="", font=dict(size=int(0.00625*width_screen))),
+        legend=dict(title="", font=dict(size=int(0.00625 * width_screen))),
     )
 
     fig.update_xaxes(
@@ -124,8 +126,10 @@ def make_graph_time(time_start, time_end, keywords, df_reviews):
         tickmode="array",
         tickvals=tick_dates,
     )
-    fig.update_yaxes(title_text="Frequency", tickfont=dict(size=int(0.00125*width_screen)))
-    fig.update_annotations(font_size=int(0.00625*width_screen))
+    fig.update_yaxes(
+        title_text="Frequency", tickfont=dict(size=int(0.00125 * width_screen))
+    )
+    fig.update_annotations(font_size=int(0.00625 * width_screen))
     return fig
 
 
@@ -142,7 +146,11 @@ def make_graph_keywords(
     freq_neutral = [dict_keywords_count_neutral[i][1] for i in range(50)]
     freq_positive = [dict_keywords_count_positive[i][1] for i in range(50)]
 
-    fig = make_subplots(rows=3, cols=1, vertical_spacing=float("{:.2f}".format(0.000365*height_screen)))
+    fig = make_subplots(
+        rows=3,
+        cols=1,
+        vertical_spacing=float("{:.2f}".format(0.000365 * height_screen)),
+    )
     fig.update_layout(title="Positive and Negative keywords by frequency")
 
     fig.add_trace(
@@ -177,7 +185,9 @@ def make_graph_keywords(
     )
     fig.update_layout(
         plot_bgcolor="rgba(33,67,156, 0.8)",
-        legend=dict(font=dict(size=int(0.00625*width_screen))),  # specify the font size for the legend
+        legend=dict(
+            font=dict(size=int(0.00625 * width_screen))
+        ),  # specify the font size for the legend
         barmode="group",
         width=int(width_screen * (0.4)),
         height=int(height_screen / 1.2),
@@ -185,7 +195,7 @@ def make_graph_keywords(
             type="category",
             range=[0, 5],  # set the initial range of bars to display
             title="Keywords",
-            tickfont=dict(size=int(0.00625*width_screen)),
+            tickfont=dict(size=int(0.00625 * width_screen)),
             showgrid=False,
             zeroline=False,
             rangeslider=dict(
@@ -198,7 +208,7 @@ def make_graph_keywords(
         yaxis=dict(
             range=[0, max(freq_negative)],
             title="Frequency",
-            tickfont=dict(size=int(0.00625*width_screen)),
+            tickfont=dict(size=int(0.00625 * width_screen)),
         ),
         hovermode="x",
     )
@@ -207,7 +217,7 @@ def make_graph_keywords(
         xaxis2=dict(
             type="category",
             range=[0, 5],  # set the initial range of bars to display
-            tickfont=dict(size=int(0.00625*width_screen)),
+            tickfont=dict(size=int(0.00625 * width_screen)),
             showgrid=False,
             zeroline=False,
             rangeslider=dict(
@@ -220,14 +230,14 @@ def make_graph_keywords(
         yaxis2=dict(
             range=[0, max(freq_positive)],
             title="Frequency",
-            tickfont=dict(size=int(0.00625*width_screen)),
+            tickfont=dict(size=int(0.00625 * width_screen)),
         ),
     )
     fig.update_layout(
         xaxis3=dict(
             type="category",
             range=[0, 5],  # set the initial range of bars to display
-            tickfont=dict(size=int(0.00625*width_screen)),
+            tickfont=dict(size=int(0.00625 * width_screen)),
             showgrid=False,
             zeroline=False,
             rangeslider=dict(
@@ -240,11 +250,15 @@ def make_graph_keywords(
         yaxis3=dict(
             range=[0, max(freq_neutral)],
             title="Frequency",
-            tickfont=dict(size=int(0.00625*width_screen)),
+            tickfont=dict(size=int(0.00625 * width_screen)),
         ),
     )
 
-    fig.update_xaxes(title_text="Keywords", tickfont=dict(size=int(0.0125*width_screen)))
-    fig.update_yaxes(title_text="Frequency", tickfont=dict(size=int(0.0125*width_screen)))
-    fig.update_annotations(font_size=int(0.00625*width_screen))
+    fig.update_xaxes(
+        title_text="Keywords", tickfont=dict(size=int(0.0125 * width_screen))
+    )
+    fig.update_yaxes(
+        title_text="Frequency", tickfont=dict(size=int(0.0125 * width_screen))
+    )
+    fig.update_annotations(font_size=int(0.00625 * width_screen))
     return fig
