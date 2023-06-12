@@ -3,12 +3,12 @@ from utils import delayed_open
 import flask
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
-from reviews_to_analysis2v1 import (
+from reviewsToAnalysis import (
     analyze_reviews,
     get_reviews,
     get_reviews_by_keyword,
 )
-from make_graph import (
+from makeGraph import (
     run_graph_time,
     run_graph_keyword,
     run_positive_negative_neutral_percentage,
